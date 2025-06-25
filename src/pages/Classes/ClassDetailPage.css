@@ -1,0 +1,41 @@
+/* ClassDetailPage.css */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  padding: 1rem;
+  text-align: left;
+}
+
+th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+}
+
+tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  th,
+  td {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .table-auto {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

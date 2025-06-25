@@ -1,0 +1,272 @@
+/* ===== Layout chia đôi ===== */
+.auth--split {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ===== Bên trái: ảnh nền full chiều cao ===== */
+.auth__left {
+  width: 60%;
+  height: 100vh; 
+  background: url('../../img/background.png') center center / cover no-repeat;
+  display: block;
+  flex-shrink: 0;
+}
+/* Ẩn bên trái khi màn hình nhỏ (mobile) */
+@media (max-width: 768px) {
+  .auth__left {
+    display: none;
+  }
+
+  .auth__right {
+    width: 100% !important;
+  }
+}
+
+/* ===== Bên phải: chứa form ===== */
+.auth__right {
+  width: 40%;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ===== Hộp chứa form ===== */
+.auth__form-box {
+  max-width: 400px;
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* ===== Logo & Slogan ===== */
+.auth__logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.auth__title {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+  color: #222;
+}
+
+.auth__slogan {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+/* ===== Form ===== */
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input-icon {
+  position: relative;
+}
+
+.input-icon i {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: #aaa;
+}
+
+.input-icon input,
+.auth__input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.auth__input:focus {
+  border-color: #ff6347;
+  outline: none;
+}
+
+/* ===== Nút login/register ===== */
+.auth__form button {
+  padding: 0.75rem;
+  background: #f36b6b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.auth__form button:hover {
+  background-color: #d00404;
+}
+
+/* ===== Extra links: quên mật khẩu, đăng ký... ===== */
+.auth__extra {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.auth__extra a {
+  color: #4781ff;
+  text-decoration: none;
+}
+
+.auth__extra a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Error Message ===== */
+.auth__error {
+  color: #d93025;
+  background-color: #fdecea;
+  border: 1px solid #f5c6cb;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+
+/* ===== Animation cho từng bước nhập OTP / đổi mật khẩu ===== */
+.fade-step {
+  animation: fadeInSlide 0.4s ease;
+}
+
+@keyframes fadeInSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+* Toastify custom styles */
+.Toastify__toast {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.Toastify__toast--success {
+  background: #E6F0FF; /* Light blue accent */
+  color: #007BFF; /* Blue accent text */
+}
+
+.Toastify__toast--error {
+  background: #FDECEA;
+  color: #D93025;
+}
+
+.Toastify__toast-body {
+  padding: 0.75rem;
+}
+
+.Toastify__progress-bar {
+  background: #007BFF; /* Blue accent for progress bar */
+}
+
+.Toastify__close-button {
+  color: #333;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+}
+auth__form input[type="text"][maxlength="6"] {
+  text-align: center;
+  letter-spacing: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.auth__form input[type="text"][maxlength="6"]:focus {
+  border-color: #007BFF; /* Blue accent */
+  outline: none;
+}
+
+/* Resend OTP button */
+.resend-otp {
+  background: none;
+  border: none;
+  color: #007BFF; /* Blue accent */
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.resend-otp:hover {
+  color: #0056b3; /* Darker blue accent */
+  text-decoration: underline;
+}
+
+/* Toastify custom styles (giữ nguyên từ trước) */
+.Toastify__toast {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.Toastify__toast--success {
+  background: #E6F0FF; /* Light blue accent */
+  color: #007BFF; /* Blue accent text */
+}
+
+.Toastify__toast--error {
+  background: #FDECEA;
+  color: #D93025;
+}
+
+.Toastify__toast-body {
+  padding: 0.75rem;
+}
+
+.Toastify__progress-bar {
+  background: #007BFF; /* Blue accent for progress bar */
+}
+
+.Toastify__close-button {
+  color: #333;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+}

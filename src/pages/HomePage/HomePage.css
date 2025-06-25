@@ -1,0 +1,52 @@
+/* HomePage.css */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.hero-section {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.feature-card {
+  transition: all 0.3s ease-in-out;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+}
+
+.footer {
+  margin-top: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 60vh;
+    padding: 2rem 0;
+  }
+
+  .text-5xl {
+    font-size: 2.25rem;
+  }
+
+  .text-xl {
+    font-size: 1.125rem;
+  }
+
+  .md\:grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
