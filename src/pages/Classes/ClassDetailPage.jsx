@@ -106,7 +106,7 @@ const ClassDetailPage = () => {
                         onClick={() =>
                           handleUpdateEnrollment(
                             enrollment.enrollmentId,
-                            "APPROVED"
+                            "ENROLLED"
                           )
                         }
                         className="text-green-600 hover:text-green-800 font-medium disabled:opacity-50"

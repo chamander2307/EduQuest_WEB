@@ -26,7 +26,10 @@ export const UserProvider = ({ children }) => {
         setUser({
           ...profile,
           id: decoded.sub,
-          fullName: profile.name, // Ánh xạ name thành fullName
+          fullName: profile.name,
+          avatarUrl:
+            profile.avatarUrl ||
+            `https://ui-avatars.com/api/?name=${profile.name}&background=random`,
         });
         setIsLogin(true);
       } catch (err) {

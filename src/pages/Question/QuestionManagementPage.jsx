@@ -40,7 +40,6 @@ const QuestionManagementPage = () => {
         setFilteredQuestions(response);
       } catch (err) {
         console.error("Lỗi khi lấy danh sách câu hỏi:", err);
-        toast.error(err.message || "Không thể tải danh sách câu hỏi");
         setQuestions([]);
         setFilteredQuestions([]);
       } finally {

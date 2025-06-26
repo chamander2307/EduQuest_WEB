@@ -37,11 +37,9 @@ export const register = async (username, name, email, password, isTeacher) => {
     console.log("Translated message:", getVietnameseMessage(data.code));
 
     if (data?.code === 201) {
-      // Đăng ký thành công, trả về dữ liệu người dùng và thông điệp
       const message = getVietnameseMessage(data.code) || "Đăng ký thành công";
       return { user: data.data, message };
     } else {
-      // Đăng ký thất bại
       const code = data.code;
       const message = getVietnameseMessage(code);
       throw new Error(message || "Đăng ký không thành công");
@@ -154,13 +152,10 @@ export const verifyRegisterOtp = async (username, otp) => {
     const data = response.data;
     console.log("Verify OTP response:", data);
 
-    if (data?.code === 200 && data?.data?.accessToken) {
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      return data.data;
+    if (data?.code === 200 && data?.data === true) {
+      return data.message || "Xác thực OTP thành công";
     } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
+      const message = getVietnameseMessage(data.code);
       throw new Error(message || "Xác thực OTP không thành công");
     }
   } catch (error) {
@@ -171,16 +166,16 @@ export const verifyRegisterOtp = async (username, otp) => {
   }
 };
 
-export const resendOtp = async () => {
+export const resendOtp = async (username) => {
   try {
-    const response = await instance.post("/auth/resend-otp");
+    const response = await instance.post("/auth/resend-otp", { username });
     const data = response.data;
-    if (data?.success) {
+    if (data?.code === 200 && data?.data === true) {
       return data.message || "OTP đã được gửi lại";
+    } else {
+      const message = getVietnameseMessage(data.code);
+      throw new Error(message || "Gửi lại OTP không thành công");
     }
-    const code = data.code;
-    const message = getVietnameseMessage(code);
-    throw new Error(message || "Gửi lại OTP không thành công");
   } catch (error) {
     const code = error.response?.data?.code;
     const message = getVietnameseMessage(code);

@@ -159,7 +159,7 @@ const RegisterPage = () => {
 
   const handleResendOtp = async () => {
     try {
-      await resendOtp();
+      await resendOtp(username);
       toast.success("OTP đã được gửi lại!", {
         position: "top-right",
         autoClose: 3000,

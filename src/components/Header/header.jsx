@@ -69,7 +69,11 @@ const Header = () => {
               <div className="user-avatar">
                 {user?.avatarUrl ? (
                   <img
-                    src={user.avatarUrl}
+                    src={
+                      user.avatarUrl.startsWith("http")
+                        ? user.avatarUrl
+                        : `http://localhost:8080${user.avatarUrl}`
+                    }
                     alt="Avatar"
                     className="user-avatar-img"
                   />

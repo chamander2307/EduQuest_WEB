@@ -15,7 +15,7 @@ const HomePage = () => {
         className="hero-section py-16 text-center bg-cover bg-center"
         style={{
           backgroundImage:
-            "url('https://www.educatetogether.ie/app/uploads/2020/10/EthicalEducationUpdated.png')",
+            "url('https://static.tildacdn.com/tild6562-6631-4635-b733-333766653931/Frame_150.svg')",
         }}
       >
         <div className="bg-black bg-opacity-50 py-16">
