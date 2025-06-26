@@ -40,3 +40,23 @@ export const createClass = async (classData) => {
     );
   }
 };
+
+export const getClassStudents = async (classId) => {
+  try {
+    const response = await instance.get(`/classes/${classId}/students`);
+    const data = response.data;
+    if (data?.data) {
+      return data;
+    }
+    throw new Error(
+      getVietnameseMessage(data.code, "Lấy danh sách sinh viên") ||
+        "Không lấy được danh sách sinh viên"
+    );
+  } catch (error) {
+    const code = error.response?.data?.code;
+    throw new Error(
+      getVietnameseMessage(code, "Lấy danh sách sinh viên") ||
+        "Không lấy được danh sách sinh viên"
+    );
+  }
+};

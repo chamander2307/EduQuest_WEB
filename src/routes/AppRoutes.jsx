@@ -9,6 +9,8 @@ import ClassManagementPage from "../pages/Classes/ClassManagementPage";
 import ClassDetailPage from "../pages/Classes/ClassDetailPage";
 import QuestionManagementPage from "../pages/Question/QuestionManagementPage";
 import HomePage from "../pages/HomePage/HomePage";
+import StudentManagementPage from "../pages/Students/StudentManagementPage";
+import ExerciseResultsPage from "../pages/Exercise/ExerciseResultsPage";
 
 const ProtectedRoute = ({ element }) => {
   const { isLogin, loading } = useContext(UserContext);
@@ -38,6 +40,14 @@ const AppRoutes = () => {
       <Route
         path="/questions"
         element={<ProtectedRoute element={<QuestionManagementPage />} />}
+      />
+      <Route
+        path="/students"
+        element={<ProtectedRoute element={<StudentManagementPage />} />}
+      />
+      <Route
+        path="/exercise-results"
+        element={<ProtectedRoute element={<ExerciseResultsPage />} />}
       />
     </Routes>
   );

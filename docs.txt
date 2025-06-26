@@ -1,0 +1,452 @@
+# API Documentation - Instructor Exercise Management by Class
+
+## API Lấy Danh Sách Bài Tập Của Giáo Viên Theo Lớp
+
+### **Endpoint:**
+```
+GET /api/exam/instructor/classes/{classId}/exercises
+```
+
+### **Mô tả:**
+API này cho phép **instructor** xem danh sách bài tập trong một lớp cụ thể mà họ đang giảng dạy, bao gồm thông tin chi tiết và thống kê cho mỗi bài tập trong lớp đó.
+
+### **Xác thực:**
+- **Required**: JWT Token  
+- **Role**: INSTRUCTOR only
+- **Permission**: Phải là instructor của lớp đó
+- **Header**: `Authorization: Bearer <token>`
+
+### **Request:**
+- **Method**: GET
+- **URL**: `/api/exam/instructor/classes/{classId}/exercises`
+- **Path Parameter**: 
+  - `classId` (required, Long): ID của lớp học cần xem bài tập
+- **Headers**: `Authorization: Bearer <JWT_TOKEN>`
+
+### **URL Example:**
+```
+GET http://localhost:8080/api/exam/instructor/classes/1/exercises
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### **Response Success (200):**
+```json
+{
+  "code": 2000,
+  "message": "Successfully retrieved exercises for class",
+  "data": [
+    {
+      "exerciseId": 1,
+      "exerciseName": "Java Programming Quiz - Class 1",
+      "description": null,
+      "startAt": "2024-01-20T08:00:00",
+      "endAt": "2024-01-20T10:00:00",
+      "durationMinutes": 60,
+      "status": "EXPIRED",
+      "createdAt": "2024-01-15T14:30:00",
+      "totalQuestions": 10,
+      "totalParticipants": 8,
+      "submittedCount": 6,
+      "inProgressCount": 2,
+      "classId": 1,
+      "className": null
+    },
+    {
+      "exerciseId": 2,
+      "exerciseName": "Database Design Test - Class 1",
+      "description": null,
+      "startAt": "2024-01-25T09:00:00",
+      "endAt": "2024-01-25T11:00:00",
+      "durationMinutes": 90,
+      "status": "ACTIVE",
+      "createdAt": "2024-01-20T16:45:00",
+      "totalQuestions": 15,
+      "totalParticipants": 12,
+      "submittedCount": 8,
+      "inProgressCount": 4,
+      "classId": 1,
+      "className": null
+    }
+  ]
+}
+```
+
+### **Response Success (200) - Không có bài tập:**
+```json
+{
+  "code": 2000,
+  "message": "No exercises found for this class",
+  "data": []
+}
+```
+
+### **Response Fields:**
+
+#### **Exercise Information:**
+- `exerciseId` (Long): ID của bài tập
+- `exerciseName` (String): Tên bài tập
+- `description` (String): Mô tả bài tập (hiện tại là null)
+- `startAt` (LocalDateTime): Thời gian bắt đầu
+- `endAt` (LocalDateTime): Thời gian kết thúc
+- `durationMinutes` (Integer): Thời lượng làm bài (phút)
+- `status` (String): Trạng thái bài tập
+  - `UPCOMING`: Chưa tới thời gian làm
+  - `ACTIVE`: Đang trong thời gian làm bài
+  - `EXPIRED`: Đã hết thời gian
+- `createdAt` (LocalDateTime): Thời gian tạo bài tập
+
+#### **Statistics:**
+- `totalQuestions` (Integer): Tổng số câu hỏi
+- `totalParticipants` (Integer): Tổng số sinh viên tham gia
+- `submittedCount` (Integer): Số sinh viên đã nộp bài
+- `inProgressCount` (Integer): Số sinh viên đang làm bài
+
+#### **Class Information:**
+- `classId` (Long): ID lớp học (được set từ path parameter)
+- `className` (String): Tên lớp học (hiện tại null - có thể cải thiện)
+
+### **Error Responses:**
+
+#### **401 - Unauthorized:**
+```json
+{
+  "code": 4001,
+  "message": "Authentication required"
+}
+```
+
+#### **403 - Forbidden (Không phải instructor của lớp):**
+```json
+{
+  "code": 4007,
+  "message": "Forbidden, you do not have permission to access this resource"
+}
+```
+
+#### **404 - Class Not Found:**
+```json
+{
+  "code": 4004,
+  "message": "Class not found"
+}
+```
+
+#### **500 - Internal Server Error:**
+```json
+{
+  "code": 5000,
+  "message": "An unexpected error occurred"
+}
+```
+
+---
+
+## Business Rules & Technical Details
+
+### **1. Access Control:**
+- ✅ Chỉ **instructor** có thể truy cập
+- ✅ Chỉ xem được bài tập trong lớp mà instructor đang dạy
+- ✅ JWT authentication required
+- ✅ Tự động filter theo `instructor_id` và `class_id`
+
+### **2. Data Source:**
+```sql
+-- Query sử dụng
+SELECT e.* FROM exercises e
+JOIN exercise_classes ec ON e.id = ec.exercise_id
+WHERE e.instructor_id = :instructorId
+AND ec.class_id = :classId
+ORDER BY e.created_at DESC
+```
+
+### **3. Status Logic:**
+```java
+LocalDateTime now = LocalDateTime.now();
+if (exercise.startAt.isAfter(now)) {
+    status = "UPCOMING";
+} else if (exercise.endAt.isBefore(now)) {
+    status = "EXPIRED";  
+} else {
+    status = "ACTIVE";
+}
+```
+
+### **4. Statistics Calculation:**
+- **totalQuestions**: Đếm từ ExerciseQuestion relationship
+- **totalParticipants**: Đếm từ Participation table cho exercise này
+- **submittedCount**: Filter participations với status = SUBMITTED
+- **inProgressCount**: Filter participations với status = IN_PROGRESS
+
+---
+
+## Use Cases
+
+### **Use Case 1: Class Management Dashboard**
+```javascript
+// Lấy bài tập cho từng lớp
+const classIds = [1, 2, 3]; // Danh sách lớp của instructor
+
+classIds.forEach(classId => {
+    fetch(`/api/exam/instructor/classes/${classId}/exercises`)
+    .then(res => res.json())
+    .then(data => {
+        console.log(`Class ${classId}: ${data.data.length} exercises`);
+    });
+});
+```
+
+### **Use Case 2: Class-specific Monitoring**
+```javascript
+// Monitor bài tập đang active trong lớp
+GET /api/exam/instructor/classes/1/exercises
+
+const activeExercises = data.filter(e => e.status === 'ACTIVE');
+activeExercises.forEach(exercise => {
+    console.log(`${exercise.exerciseName}: ${exercise.inProgressCount} students working`);
+});
+```
+
+### **Use Case 3: Class Performance Analytics**
+```javascript
+// Phân tích hiệu quả của lớp
+const classExercises = await fetch('/api/exam/instructor/classes/1/exercises');
+const completionRates = classExercises.data.map(exercise => ({
+    name: exercise.exerciseName,
+    completion: (exercise.submittedCount / exercise.totalParticipants) * 100,
+    status: exercise.status
+}));
+```
+
+---
+
+## Integration Workflows
+
+### **Multi-Class Dashboard Flow:**
+```
+1. Instructor Login → JWT Token
+2. Get Instructor Classes → GET /api/classes/instructors
+3. For each class → GET /api/exam/instructor/classes/{classId}/exercises
+4. Display class-specific exercise overview
+5. Drill down → GET /api/exam/{exerciseId}/results for details
+```
+
+### **Class Navigation:**
+```javascript
+// Frontend navigation structure
+const ClassExerciseView = ({ classId }) => {
+    const [exercises, setExercises] = useState([]);
+    
+    useEffect(() => {
+        fetch(`/api/exam/instructor/classes/${classId}/exercises`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => setExercises(data.data));
+    }, [classId]);
+    
+    return (
+        <div>
+            <h2>Exercises for Class {classId}</h2>
+            {exercises.map(exercise => (
+                <ExerciseCard key={exercise.exerciseId} exercise={exercise} />
+            ))}
+        </div>
+    );
+};
+```
+
+---
+
+## Key Improvements vs Previous API
+
+### **🔄 Changes Made:**
+
+1. **Scoped by Class**: Thay vì lấy tất cả exercises, giờ lấy theo từng lớp
+2. **Better Organization**: Instructor có thể quản lý exercises theo lớp
+3. **Accurate Class Info**: `classId` được set chính xác từ path parameter
+4. **Focused Statistics**: Statistics chỉ cho exercises trong lớp đó
+
+### **✅ Benefits:**
+
+- **Better Performance**: Ít data hơn, query nhanh hơn
+- **Organized Management**: Instructor dễ quản lý theo lớp
+- **Scalable**: Phù hợp khi instructor có nhiều lớp
+- **Contextual**: Kết hợp tốt với class management workflow
+
+### **🎯 Use Case Comparison:**
+
+| **Previous API** | **New API** |
+|------------------|-------------|
+| Tất cả exercises | Exercises theo lớp |
+| Khó organize | Dễ organize theo lớp |
+| Mixed statistics | Focused statistics |
+| General overview | Class-specific view |
+
+---
+
+## Sample Frontend Integration
+
+### **Class-based Exercise Management:**
+```jsx
+const InstructorClassExercises = ({ classId }) => {
+    const [exercises, setExercises] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
+    useEffect(() => {
+        loadExercises();
+    }, [classId]);
+    
+    const loadExercises = async () => {
+        try {
+            const response = await fetch(
+                `/api/exam/instructor/classes/${classId}/exercises`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            setExercises(data.data);
+        } catch (error) {
+            console.error('Error loading exercises:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    const getStatusColor = (status) => {
+        switch(status) {
+            case 'ACTIVE': return 'green';
+            case 'UPCOMING': return 'blue';
+            case 'EXPIRED': return 'gray';
+            default: return 'black';
+        }
+    };
+    
+    if (loading) return <div>Loading exercises...</div>;
+    
+    return (
+        <div className="class-exercises">
+            <h2>Exercises for Class {classId}</h2>
+            
+            {exercises.length === 0 ? (
+                <p>No exercises found for this class.</p>
+            ) : (
+                <div className="exercises-grid">
+                    {exercises.map(exercise => (
+                        <div key={exercise.exerciseId} className="exercise-card">
+                            <h3>{exercise.exerciseName}</h3>
+                            <div style={{ color: getStatusColor(exercise.status) }}>
+                                Status: {exercise.status}
+                            </div>
+                            <div>Questions: {exercise.totalQuestions}</div>
+                            <div>Participants: {exercise.totalParticipants}</div>
+                            <div>Submitted: {exercise.submittedCount}</div>
+                            <div>In Progress: {exercise.inProgressCount}</div>
+                            
+                            <button onClick={() => viewResults(exercise.exerciseId)}>
+                                View Results
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+
+
+# API Documentation - Exercise Results
+
+## API Lấy Kết Quả Bài Tập
+
+### **Endpoint:**
+```
+GET /api/exam/{exerciseId}/results
+```
+
+### **Mô tả:**
+Lấy danh sách kết quả làm bài của tất cả sinh viên cho một bài tập cụ thể. Chỉ instructor sở hữu bài tập mới có thể truy cập.
+
+### **Request:**
+- **Method**: GET
+- **URL**: `/api/exam/{exerciseId}/results`
+- **Headers**: `Authorization: Bearer <JWT_TOKEN>`
+- **Role**: INSTRUCTOR only
+
+### **Example:**
+```
+GET http://localhost:8080/api/exam/1/results
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### **Response (200):**
+```json
+{
+  "code": 2000,
+  "message": "Successfully retrieved exercise results",
+  "data": {
+    "exerciseId": 1,
+    "exerciseName": "Java Programming Quiz",
+    "totalQuestions": 10,
+    "totalParticipants": 5,
+    "studentResults": [
+      {
+        "participationId": 1,
+        "studentName": "Nguyễn Văn A",
+        "studentCode": "SV001",
+        "studentEmail": "student1@example.com",
+        "score": 8.5,
+        "totalQuestions": 10,
+        "correctAnswers": 8,
+        "status": "SUBMITTED",
+        "startedAt": "2024-01-15T08:30:00",
+        "submittedAt": "2024-01-15T09:15:00",
+        "duration": "45 minutes"
+      },
+      {
+        "participationId": 2,
+        "studentName": "Trần Thị B",
+        "studentCode": "SV002",
+        "studentEmail": "student2@example.com",
+        "score": 0.0,
+        "totalQuestions": 10,
+        "correctAnswers": null,
+        "status": "IN_PROGRESS",
+        "startedAt": "2024-01-15T09:00:00",
+        "submittedAt": null,
+        "duration": null
+      }
+    ]
+  }
+}
+```
+
+### **Key Fields:**
+- `exerciseId`: ID bài tập
+- `exerciseName`: Tên bài tập  
+- `totalQuestions`: Tổng số câu hỏi
+- `totalParticipants`: Tổng số sinh viên tham gia
+- `studentResults[]`: Danh sách kết quả từng sinh viên
+  - `participationId`: ID lần tham gia
+  - `studentName/Code/Email`: Thông tin sinh viên
+  - `score`: Điểm số (0.0-10.0)
+  - `correctAnswers`: Số câu đúng (null nếu chưa submit)
+  - `status`: SUBMITTED | IN_PROGRESS | TIMEOUT
+  - `duration`: Thời gian làm bài ("X minutes")
+
+### **Error Responses:**
+- **401**: Unauthorized (cần JWT token)
+- **403**: Forbidden (không phải instructor của bài tập)  
+- **404**: Exercise not found
+- **500**: Internal server error
+
+### **Use Cases:**
+- ✅ Xem tổng quan kết quả lớp
+- ✅ Theo dõi sinh viên đang làm bài
+- ✅ Phân tích hiệu quả bài tập
+- ✅ Export results cho grading
+
+### **Business Rules:**
+- Chỉ instructor tạo bài tập mới xem được results
+- `correctAnswers` chỉ có giá trị khi `status = "SUBMITTED"`
+- `duration` tính từ `startedAt` đến `submittedAt`
+- Results được sort theo thời gian bắt đầu
