@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   getQuestionsByInstructor,
@@ -14,6 +14,7 @@ const QuestionManagementPage = () => {
   const [questions, setQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -28,41 +29,39 @@ const QuestionManagementPage = () => {
   const [filterDifficulty, setFilterDifficulty] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        setLoading(true);
-        const response = await getQuestionsByInstructor();
-        if (!Array.isArray(response)) {
-          throw new Error("Dữ liệu câu hỏi không hợp lệ");
-        }
-        setQuestions(response);
-        setFilteredQuestions(response);
-      } catch (err) {
-        console.error("Lỗi khi lấy danh sách câu hỏi:", err);
-        setQuestions([]);
-        setFilteredQuestions([]);
-      } finally {
-        setLoading(false);
+  const fetchQuestions = async () => {
+    if (isFetching) return;
+    setIsFetching(true);
+    try {
+      setLoading(true);
+      const response = await getQuestionsByInstructor();
+      if (!Array.isArray(response)) {
+        throw new Error("Dữ liệu câu hỏi không hợp lệ");
       }
-    };
+      setQuestions(response);
+      setFilteredQuestions(response);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+      setIsFetching(false);
+    }
+  };
 
+  useEffect(() => {
     fetchQuestions();
   }, []);
 
   useEffect(() => {
     let result = [...questions];
-
     if (filterDifficulty !== "ALL") {
       result = result.filter((q) => q.difficulty === filterDifficulty);
     }
-
     if (searchTerm.trim()) {
       result = result.filter((q) =>
         q.content.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
     setFilteredQuestions(result);
   }, [filterDifficulty, searchTerm, questions]);
 
@@ -75,7 +74,7 @@ const QuestionManagementPage = () => {
         difficulty: question.difficulty,
         answers: question.answers.map((ans) => ({
           content: ans.content,
-          isCorrect: false,
+          isCorrect: ans.isCorrect,
         })),
       });
     } else {
@@ -99,9 +98,18 @@ const QuestionManagementPage = () => {
   };
 
   const handleAnswerChange = (index, field, value) => {
-    const updatedAnswers = [...formData.answers];
-    updatedAnswers[index] = { ...updatedAnswers[index], [field]: value };
-    setFormData((prev) => ({ ...prev, answers: updatedAnswers }));
+    setFormData((prev) => {
+      let updatedAnswers = [...prev.answers];
+      if (field === "isCorrect") {
+        updatedAnswers = updatedAnswers.map((ans, i) => ({
+          ...ans,
+          isCorrect: i === index ? value : false,
+        }));
+      } else {
+        updatedAnswers[index] = { ...updatedAnswers[index], [field]: value };
+      }
+      return { ...prev, answers: updatedAnswers };
+    });
   };
 
   const addAnswer = () => {
@@ -132,6 +140,10 @@ const QuestionManagementPage = () => {
       toast.error("Phải có ít nhất 1 đáp án đúng");
       return;
     }
+    if (formData.answers.some((ans) => !ans.content.trim())) {
+      toast.error("Nội dung đáp án không được để trống");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -144,19 +156,19 @@ const QuestionManagementPage = () => {
         })),
       };
 
-      let response;
       if (isEditMode) {
-        response = await updateQuestion(currentQuestion.id, questionData);
-        setQuestions(
-          questions.map((q) => (q.id === currentQuestion.id ? response : q))
-        );
+        if (!currentQuestion.questionId) {
+          toast.error("Không tìm thấy ID câu hỏi để cập nhật");
+          return;
+        }
+        await updateQuestion(currentQuestion.questionId, questionData);
         toast.success("Cập nhật câu hỏi thành công!");
       } else {
-        response = await createQuestion(questionData);
-        setQuestions([...questions, response]);
+        await createQuestion(questionData);
         toast.success("Tạo câu hỏi thành công!");
       }
 
+      await fetchQuestions();
       setShowModal(false);
       setFormData({
         content: "",
@@ -167,26 +179,9 @@ const QuestionManagementPage = () => {
         ],
       });
     } catch (err) {
-      toast.error(err.message || "Không thể lưu câu hỏi");
+      toast.error(err.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDeleteQuestion = async (questionId) => {
-    if (window.confirm("Bạn có chắc muốn xóa câu hỏi này?")) {
-      try {
-        setLoading(true);
-        setQuestions(questions.filter((q) => q.id !== questionId));
-        setFilteredQuestions(
-          filteredQuestions.filter((q) => q.id !== questionId)
-        );
-        toast.success("Xóa câu hỏi thành công!");
-      } catch (err) {
-        toast.error(err.message || "Không thể xóa câu hỏi");
-      } finally {
-        setLoading(false);
-      }
     }
   };
 
@@ -202,7 +197,6 @@ const QuestionManagementPage = () => {
         </button>
       </div>
 
-      {/* Bộ lọc */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex-1">
           <label className="block text-gray-700 mb-2" htmlFor="searchTerm">
@@ -375,6 +369,7 @@ const QuestionManagementPage = () => {
               <thead>
                 <tr className="bg-gray-200 text-gray-700 text-left">
                   <th className="p-4 font-semibold">STT</th>
+                  <th className="p-4 font-semibold">Mã câu hỏi</th>
                   <th className="p-4 font-semibold">Nội dung câu hỏi</th>
                   <th className="p-4 font-semibold">Độ khó</th>
                   <th className="p-4 font-semibold">Ngày tạo</th>
@@ -384,10 +379,11 @@ const QuestionManagementPage = () => {
               <tbody>
                 {filteredQuestions.map((question, index) => (
                   <tr
-                    key={index}
+                    key={question.questionId}
                     className="border-b hover:bg-gray-100 transition"
                   >
                     <td className="p-4">{index + 1}</td>
+                    <td className="p-4">{question.questionId}</td>
                     <td className="p-4">{question.content}</td>
                     <td className="p-4">
                       {question.difficulty === "EASY"
@@ -406,12 +402,6 @@ const QuestionManagementPage = () => {
                       >
                         Sửa
                       </button>
-                      <button
-                        onClick={() => handleDeleteQuestion(index)}
-                        className="text-red-600 hover:text-red-800 font-medium"
-                      >
-                        Xóa
-                      </button>
                     </td>
                   </tr>
                 ))}
@@ -420,20 +410,6 @@ const QuestionManagementPage = () => {
           </div>
         )}
       </div>
-
-      {/* ToastContainer */}
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </div>
   );
 };

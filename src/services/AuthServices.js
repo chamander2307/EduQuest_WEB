@@ -8,16 +8,16 @@ export const refreshToken = async () => {
     if (data?.data?.accessToken) {
       localStorage.setItem("accessToken", data.data.accessToken);
       localStorage.setItem("refreshToken", data.data.refreshToken);
-      return data.data.accessToken;
-    } else {
-      throw new Error(
-        getVietnameseMessage(data.code) || "Làm mới token không thành công"
-      );
+      return data.data;
     }
-  } catch (error) {
-    console.error("Refresh token error:", error);
     throw new Error(
-      getVietnameseMessage(error.response?.data?.code) ||
+      getVietnameseMessage(data.code, "Làm mới token") ||
+        "Làm mới token không thành công"
+    );
+  } catch (error) {
+    const code = error.response?.data?.code;
+    throw new Error(
+      getVietnameseMessage(code, "Làm mới token") ||
         "Làm mới token không thành công"
     );
   }
@@ -33,22 +33,20 @@ export const register = async (username, name, email, password, isTeacher) => {
       isTeacher,
     });
     const data = response.data;
-    console.log("Register response:", data);
-    console.log("Translated message:", getVietnameseMessage(data.code));
-
     if (data?.code === 201) {
-      const message = getVietnameseMessage(data.code) || "Đăng ký thành công";
-      return { user: data.data, message };
-    } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
-      throw new Error(message || "Đăng ký không thành công");
+      return {
+        user: data.data,
+        message: getVietnameseMessage(data.code) || "Đăng ký thành công",
+      };
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Đăng ký") || "Đăng ký không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Register error:", error);
-    throw new Error(message || "Đăng ký không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Đăng ký") || "Đăng ký không thành công"
+    );
   }
 };
 
@@ -60,16 +58,16 @@ export const login = async (username, password) => {
       localStorage.setItem("accessToken", data.data.accessToken);
       localStorage.setItem("refreshToken", data.data.refreshToken);
       return data.data;
-    } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
-      throw new Error(message || "Đăng nhập không thành công");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Đăng nhập") ||
+        "Đăng nhập không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Login error:", error);
-    throw new Error(message || "Đăng nhập không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Đăng nhập") || "Đăng nhập không thành công"
+    );
   }
 };
 
@@ -80,8 +78,9 @@ export const logout = async () => {
     localStorage.removeItem("refreshToken");
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Logout error:", message);
+    throw new Error(
+      getVietnameseMessage(code, "Đăng xuất") || "Đăng xuất không thành công"
+    );
   }
 };
 
@@ -92,14 +91,16 @@ export const forgotPassword = async (email) => {
     if (data?.success) {
       return data.message || "Yêu cầu đặt lại mật khẩu đã được gửi";
     }
-    const code = data.code;
-    const message = getVietnameseMessage(code);
-    throw new Error(message || "Yêu cầu đặt lại mật khẩu không thành công");
+    throw new Error(
+      getVietnameseMessage(data.code, "Đặt lại mật khẩu") ||
+        "Yêu cầu đặt lại mật khẩu không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Forgot password error:", error);
-    throw new Error(message || "Yêu cầu đặt lại mật khẩu không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Đặt lại mật khẩu") ||
+        "Yêu cầu đặt lại mật khẩu không thành công"
+    );
   }
 };
 
@@ -113,16 +114,17 @@ export const verifyOtpForgotPassword = async (otp) => {
       localStorage.setItem("accessToken", data.data.accessToken);
       localStorage.setItem("refreshToken", data.data.refreshToken);
       return data.data;
-    } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
-      throw new Error(message || "Xác thực OTP không thành công");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Xác thực OTP") ||
+        "Xác thực OTP không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Verify OTP error:", error);
-    throw new Error(message || "Xác thực OTP không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Xác thực OTP") ||
+        "Xác thực OTP không thành công"
+    );
   }
 };
 
@@ -135,14 +137,16 @@ export const resetPassword = async (newPassword) => {
     if (data?.success) {
       return data.message || "Đặt lại mật khẩu thành công";
     }
-    const code = data.code;
-    const message = getVietnameseMessage(code);
-    throw new Error(message || "Đặt lại mật khẩu không thành công");
+    throw new Error(
+      getVietnameseMessage(data.code, "Đặt lại mật khẩu") ||
+        "Đặt lại mật khẩu không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Reset password error:", error);
-    throw new Error(message || "Đặt lại mật khẩu không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Đặt lại mật khẩu") ||
+        "Đặt lại mật khẩu không thành công"
+    );
   }
 };
 
@@ -150,19 +154,19 @@ export const verifyRegisterOtp = async (username, otp) => {
   try {
     const response = await instance.post("/auth/verify-otp", { username, otp });
     const data = response.data;
-    console.log("Verify OTP response:", data);
-
     if (data?.code === 200 && data?.data === true) {
       return data.message || "Xác thực OTP thành công";
-    } else {
-      const message = getVietnameseMessage(data.code);
-      throw new Error(message || "Xác thực OTP không thành công");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Xác thực OTP") ||
+        "Xác thực OTP không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Verify OTP error:", error);
-    throw new Error(message || "Xác thực OTP không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Xác thực OTP") ||
+        "Xác thực OTP không thành công"
+    );
   }
 };
 
@@ -172,14 +176,16 @@ export const resendOtp = async (username) => {
     const data = response.data;
     if (data?.code === 200 && data?.data === true) {
       return data.message || "OTP đã được gửi lại";
-    } else {
-      const message = getVietnameseMessage(data.code);
-      throw new Error(message || "Gửi lại OTP không thành công");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Gửi lại OTP") ||
+        "Gửi lại OTP không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Resend OTP error:", error);
-    throw new Error(message || "Gửi lại OTP không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Gửi lại OTP") ||
+        "Gửi lại OTP không thành công"
+    );
   }
 };

@@ -7,54 +7,59 @@ export const getQuestionsByInstructor = async () => {
     const data = response.data;
     if (data?.data) {
       return data.data;
-    } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
-      throw new Error(message || "Không lấy được danh sách câu hỏi");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Lấy danh sách câu hỏi") ||
+        "Không lấy được danh sách câu hỏi"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Get questions by instructor error:", error);
-    throw new Error(message || "Không lấy được danh sách câu hỏi");
+    throw new Error(
+      getVietnameseMessage(code, "Lấy danh sách câu hỏi") ||
+        "Không lấy được danh sách câu hỏi"
+    );
   }
 };
+
 export const createQuestion = async (questionData) => {
   try {
     const response = await instance.post(`/questions/create`, questionData);
     const data = response.data;
     if (data?.data) {
       return data.data;
-    } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
-      throw new Error(message || "Tạo câu hỏi không thành công");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Tạo câu hỏi") ||
+        "Tạo câu hỏi không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Create question error:", error);
-    throw new Error(message || "Tạo câu hỏi không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Tạo câu hỏi") ||
+        "Tạo câu hỏi không thành công"
+    );
   }
 };
+
 export const updateQuestion = async (questionId, questionData) => {
   try {
     const response = await instance.put(
-      `/questions/${questionId}`,
+      `/questions/update/${questionId}`,
       questionData
     );
     const data = response.data;
     if (data?.data) {
       return data.data;
-    } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
-      throw new Error(message || "Cập nhật câu hỏi không thành công");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Cập nhật câu hỏi") ||
+        "Cập nhật câu hỏi không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Update question error:", error);
-    throw new Error(message || "Cập nhật câu hỏi không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Cập nhật câu hỏi") ||
+        "Cập nhật câu hỏi không thành công"
+    );
   }
 };

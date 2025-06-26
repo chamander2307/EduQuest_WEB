@@ -7,16 +7,17 @@ export const getInstructorClasses = async () => {
     const data = response.data;
     if (data?.data) {
       return data;
-    } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
-      throw new Error(message || "Không lấy được danh sách lớp học");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Lấy danh sách lớp học") ||
+        "Không lấy được danh sách lớp học"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Get instructor classes error:", error);
-    throw new Error(message || "Không lấy được danh sách lớp học");
+    throw new Error(
+      getVietnameseMessage(code, "Lấy danh sách lớp học") ||
+        "Không lấy được danh sách lớp học"
+    );
   }
 };
 
@@ -26,15 +27,16 @@ export const createClass = async (classData) => {
     const data = response.data;
     if (data?.data) {
       return data;
-    } else {
-      const code = data.code;
-      const message = getVietnameseMessage(code);
-      throw new Error(message || "Tạo lớp học không thành công");
     }
+    throw new Error(
+      getVietnameseMessage(data.code, "Tạo lớp học") ||
+        "Tạo lớp học không thành công"
+    );
   } catch (error) {
     const code = error.response?.data?.code;
-    const message = getVietnameseMessage(code);
-    console.error("Create class error:", error);
-    throw new Error(message || "Tạo lớp học không thành công");
+    throw new Error(
+      getVietnameseMessage(code, "Tạo lớp học") ||
+        "Tạo lớp học không thành công"
+    );
   }
 };

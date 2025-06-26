@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { getInstructorProfile } from "../services/InstructorServices";
 import { logout as performLogout } from "../services/AuthServices";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export const UserContext = createContext();
 
@@ -23,6 +24,12 @@ export const UserProvider = ({ children }) => {
       try {
         const decoded = jwtDecode(token);
         const profile = await getInstructorProfile();
+        if (profile.role === "STUDENT") {
+          setTimeout(() => {
+            logout();
+          }, 2000);
+          return;
+        }
         setUser({
           ...profile,
           id: decoded.sub,

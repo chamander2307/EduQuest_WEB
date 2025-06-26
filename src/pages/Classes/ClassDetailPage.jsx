@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   getPendingEnrollments,
@@ -13,31 +13,49 @@ const ClassDetailPage = () => {
   const navigate = useNavigate();
   const [pendingEnrollments, setPendingEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const [errorHandled, setErrorHandled] = useState(false);
 
   useEffect(() => {
     const fetchPendingEnrollments = async () => {
+      if (isFetching) return;
+      setIsFetching(true);
       try {
         setLoading(true);
         const response = await getPendingEnrollments(classId);
-
         if (!Array.isArray(response)) {
           throw new Error("Dữ liệu đăng ký chờ không hợp lệ");
         }
-
         setPendingEnrollments(response);
       } catch (err) {
-        console.error("Lỗi khi lấy danh sách đăng ký chờ:", err);
-        toast.error(err.message || "Không thể tải danh sách đăng ký chờ");
-        setPendingEnrollments([]);
+        if (!errorHandled) {
+          console.log("Error handled in ClassDetailPage:", err.message);
+          toast.error(
+            err.response?.data?.code
+              ? getVietnameseMessage(err.response.data.code)
+              : err.message
+          );
+          setErrorHandled(true);
+        }
       } finally {
         setLoading(false);
+        setIsFetching(false);
       }
     };
 
     fetchPendingEnrollments();
-  }, [classId]);
+  }, [classId, errorHandled]);
 
   const handleUpdateEnrollment = async (enrollmentId, status) => {
+    if (
+      !window.confirm(
+        `Bạn có chắc muốn ${
+          status === "ENROLLED" ? "chấp nhận" : "từ chối"
+        } đăng ký này?`
+      )
+    ) {
+      return;
+    }
     try {
       setLoading(true);
       await updateEnrollmentStatus(enrollmentId, status);
@@ -48,11 +66,16 @@ const ClassDetailPage = () => {
       );
       toast.success(
         `Đã ${
-          status === "APPROVED" ? "chấp nhận" : "từ chối"
+          status === "ENROLLED" ? "chấp nhận" : "từ chối"
         } đăng ký thành công!`
       );
     } catch (err) {
-      toast.error(err.message || "Không thể cập nhật trạng thái đăng ký");
+      console.log("Error handled in handleUpdateEnrollment:", err.message);
+      toast.error(
+        err.response?.data?.code
+          ? getVietnameseMessage(err.response.data.code)
+          : err.message
+      );
     } finally {
       setLoading(false);
     }
@@ -70,7 +93,6 @@ const ClassDetailPage = () => {
         </button>
       </div>
 
-      {/* Danh sách học sinh chờ duyệt */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <h2 className="text-xl font-semibold p-4 bg-gray-50 border-b text-gray-700">
           Danh sách học sinh chờ duyệt
@@ -134,19 +156,6 @@ const ClassDetailPage = () => {
           </div>
         )}
       </div>
-
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </div>
   );
 };

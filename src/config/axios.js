@@ -28,12 +28,9 @@ const isTokenExpired = (token) => {
   }
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    console.log("Token payload:", payload);
     const currentTime = Math.floor(Date.now() / 1000);
     const isExpired = payload.exp < currentTime;
-    console.log(
-      `Token expiration check: exp=${payload.exp}, currentTime=${currentTime}, isExpired=${isExpired}`
-    );
+
     return isExpired;
   } catch (e) {
     console.error("Error decoding token:", e.message);
@@ -43,22 +40,18 @@ const isTokenExpired = (token) => {
 
 instance.interceptors.request.use(async (config) => {
   const token = localStorage.getItem("accessToken");
-  console.log(`Request to ${config.url}, has token: ${!!token}`);
 
   if (!token) {
-    console.log(`No token found for request: ${config.url}`);
     return config;
   }
 
   if (!isTokenExpired(token)) {
-    console.log(`Using valid token for request: ${config.url}`);
     config.headers["Authorization"] = `Bearer ${token}`;
     return config;
   }
 
   if (!isRefreshing) {
     isRefreshing = true;
-    console.log(`Token expired, refreshing for request: ${config.url}`);
     try {
       const data = await refreshToken();
       const newToken = data?.accessToken;
@@ -77,7 +70,7 @@ instance.interceptors.request.use(async (config) => {
       setTimeout(() => {
         window.location.href = "/login";
       }, 100);
-      throw error;
+      return config;
     } finally {
       isRefreshing = false;
       console.log("Token refresh completed, isRefreshing:", isRefreshing);
@@ -113,7 +106,6 @@ instance.interceptors.response.use(
       originalRequest._retry = true;
       if (!isRefreshing) {
         isRefreshing = true;
-        console.log("Retrying with refreshed token...");
         try {
           const data = await refreshToken();
           const newToken = data?.accessToken;
@@ -121,7 +113,6 @@ instance.interceptors.response.use(
             throw new Error("No new access token received");
           }
           localStorage.setItem("accessToken", newToken);
-          console.log("Token refreshed for retry:", newToken);
           processQueue(null, newToken);
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
           return instance(originalRequest);
@@ -132,25 +123,12 @@ instance.interceptors.response.use(
           setTimeout(() => {
             window.location.href = "/login";
           }, 100);
-          return Promise.reject(e);
+          return Promise.reject(error);
         } finally {
           isRefreshing = false;
-          console.log("Token refresh completed, isRefreshing:", isRefreshing);
         }
       }
-
-      console.log(`Queueing retry request: ${originalRequest.url}`);
-      return new Promise((resolve, reject) => {
-        failedQueue.push({
-          resolve: (newToken) => {
-            originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-            resolve(instance(originalRequest));
-          },
-          reject,
-        });
-      });
     }
-
     return Promise.reject(error);
   }
 );
