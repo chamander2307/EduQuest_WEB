@@ -75,20 +75,6 @@ const ClassManagementPage = () => {
     }
   };
 
-  const handleDeleteClass = async (classId) => {
-    if (window.confirm("Bạn có chắc muốn xóa lớp học này?")) {
-      try {
-        setLoading(true);
-        setClasses(classes.filter((cls) => cls.id !== classId));
-        toast.success("Xóa lớp học thành công!");
-      } catch (err) {
-        toast.error(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
   if (userLoading) {
     return <div className="text-center py-10">Đang tải...</div>;
   }
@@ -195,12 +181,6 @@ const ClassManagementPage = () => {
                         className="text-blue-600 hover:text-blue-800 font-medium"
                       >
                         Chi tiết
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClass(cls.id)}
-                        className="text-red-600 hover:text-red-800 font-medium"
-                      >
-                        Xóa
                       </button>
                     </td>
                   </tr>
