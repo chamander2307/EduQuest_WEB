@@ -1,5 +1,7 @@
 import instance from "../config/axios";
+import { jwtDecode } from "jwt-decode";
 import { getVietnameseMessage } from "../constants/VietNameseStatus";
+import { toast } from "react-toastify";
 
 export const refreshToken = async () => {
   try {
@@ -55,9 +57,19 @@ export const login = async (username, password) => {
     const response = await instance.post("/auth/login", { username, password });
     const data = response.data;
     if (data?.data?.accessToken) {
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      return data.data;
+      console.log("Login response data:", data);
+      const decoded = jwtDecode(data.data.accessToken);
+      console.log("Decoded token:", decoded);
+      if (decoded?.role === "ROLE_STUDENT") {
+        toast.error(
+          "Tài khoản của bạn không có quyền truy cập vào hệ thống này. Vui lòng đăng nhập bằng tài khoản giáo viên."
+        );
+        return null;
+      } else {
+        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
+        return data.data;
+      }
     }
     throw new Error(
       getVietnameseMessage(data.code, "Đăng nhập") ||

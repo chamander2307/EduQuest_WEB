@@ -1,6 +1,7 @@
 import axios from "axios";
 import { refreshToken } from "../services/AuthServices";
 
+// Tạo instance Axios với cấu hình cơ bản
 const instance = axios.create({
   baseURL: "http://localhost:8080/api",
   withCredentials: true,
@@ -30,7 +31,7 @@ const isTokenExpired = (token) => {
     const payload = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Math.floor(Date.now() / 1000);
     const isExpired = payload.exp < currentTime;
-
+    console.log(`Token expiry check: ${isExpired ? "Expired" : "Valid"}`);
     return isExpired;
   } catch (e) {
     console.error("Error decoding token:", e.message);
@@ -56,7 +57,6 @@ instance.interceptors.request.use(async (config) => {
   }
 
   const token = localStorage.getItem("accessToken");
-
   if (!token) {
     return config;
   }
@@ -66,43 +66,52 @@ instance.interceptors.request.use(async (config) => {
     return config;
   }
 
-  if (!isRefreshing) {
-    isRefreshing = true;
-    try {
-      const data = await refreshToken();
-      const newToken = data?.accessToken;
-      if (!newToken) {
-        throw new Error("No new access token received");
-      }
-      localStorage.setItem("accessToken", newToken);
-      console.log("Token refreshed successfully:", newToken);
-      processQueue(null, newToken);
-      config.headers["Authorization"] = `Bearer ${newToken}`;
-      return config;
-    } catch (error) {
-      console.error("Refresh token failed:", error.message);
-      processQueue(error, null);
-      localStorage.removeItem("accessToken");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 100);
-      return config;
-    } finally {
-      isRefreshing = false;
-      console.log("Token refresh completed, isRefreshing:", isRefreshing);
-    }
+  if (isRefreshing) {
+    console.log(`Queueing request while refreshing: ${config.url}`);
+    return new Promise((resolve, reject) => {
+      failedQueue.push({
+        resolve: (newToken) => {
+          config.headers["Authorization"] = `Bearer ${newToken}`;
+          resolve(config);
+        },
+        reject,
+      });
+    });
   }
 
-  console.log(`Queueing request while refreshing: ${config.url}`);
-  return new Promise((resolve, reject) => {
-    failedQueue.push({
-      resolve: (newToken) => {
-        config.headers["Authorization"] = `Bearer ${newToken}`;
-        resolve(config);
-      },
-      reject,
-    });
-  });
+  isRefreshing = true;
+  try {
+    const data = await refreshToken();
+    const newToken = data?.accessToken;
+    if (!newToken) {
+      throw new Error("No new access token received");
+    }
+    localStorage.setItem("accessToken", newToken);
+    console.log("Token refreshed successfully");
+    processQueue(null, newToken);
+    config.headers["Authorization"] = `Bearer ${newToken}`;
+    return config;
+  } catch (error) {
+    const code = error.response?.data?.code;
+    const message = error.response?.data?.message;
+    console.error(
+      "Refresh token failed:",
+      error.message,
+      "| Backend code:",
+      code,
+      "| Backend message:",
+      message
+    );
+    processQueue(error, null);
+    localStorage.removeItem("accessToken");
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 100);
+    throw error;
+  } finally {
+    isRefreshing = false;
+    console.log("Token refresh completed, isRefreshing:", isRefreshing);
+  }
 });
 
 instance.interceptors.response.use(
@@ -120,6 +129,7 @@ instance.interceptors.response.use(
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
+
       if (!isRefreshing) {
         isRefreshing = true;
         try {
@@ -129,6 +139,7 @@ instance.interceptors.response.use(
             throw new Error("No new access token received");
           }
           localStorage.setItem("accessToken", newToken);
+          console.log("Token refreshed on retry");
           processQueue(null, newToken);
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
           return instance(originalRequest);
@@ -144,7 +155,18 @@ instance.interceptors.response.use(
           isRefreshing = false;
         }
       }
+
+      return new Promise((resolve, reject) => {
+        failedQueue.push({
+          resolve: (newToken) => {
+            originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+            resolve(instance(originalRequest));
+          },
+          reject,
+        });
+      });
     }
+
     return Promise.reject(error);
   }
 );

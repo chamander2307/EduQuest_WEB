@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,6 +8,7 @@ import {
   updateQuestion,
 } from "../../services/QuestionServices";
 import "./QuestionManagementPage.css";
+import { getVietnameseMessage } from "../../constants/VietNameseStatus";
 
 const QuestionManagementPage = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const QuestionManagementPage = () => {
   });
   const [filterDifficulty, setFilterDifficulty] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const errorHandledRef = useRef(false);
 
   const fetchQuestions = async () => {
     if (isFetching) return;
@@ -40,8 +42,18 @@ const QuestionManagementPage = () => {
       }
       setQuestions(response);
       setFilteredQuestions(response);
+      errorHandledRef.current = false; // Reset khi thành công
     } catch (err) {
-      toast.error(err.message);
+      if (!errorHandledRef.current) {
+        console.log("Error handled in QuestionManagementPage:", err.message);
+        const errorMessage = err.response?.data?.code
+          ? getVietnameseMessage(err.response.data.code)
+          : err.message;
+        toast.error(errorMessage, {
+          toastId: `error-${err.response?.data?.code || err.message}`,
+        });
+        errorHandledRef.current = true;
+      }
     } finally {
       setLoading(false);
       setIsFetching(false);
@@ -129,19 +141,27 @@ const QuestionManagementPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.content.trim()) {
-      toast.error("Nội dung câu hỏi không được để trống");
+      toast.error("Nội dung câu hỏi không được để trống", {
+        toastId: "error-empty-content",
+      });
       return;
     }
     if (formData.answers.length < 2) {
-      toast.error("Phải có ít nhất 2 đáp án");
+      toast.error("Phải có ít nhất 2 đáp án", {
+        toastId: "error-min-answers",
+      });
       return;
     }
     if (!formData.answers.some((ans) => ans.isCorrect)) {
-      toast.error("Phải có ít nhất 1 đáp án đúng");
+      toast.error("Phải có ít nhất 1 đáp án đúng", {
+        toastId: "error-no-correct-answer",
+      });
       return;
     }
     if (formData.answers.some((ans) => !ans.content.trim())) {
-      toast.error("Nội dung đáp án không được để trống");
+      toast.error("Nội dung đáp án không được để trống", {
+        toastId: "error-empty-answer",
+      });
       return;
     }
 
@@ -158,7 +178,9 @@ const QuestionManagementPage = () => {
 
       if (isEditMode) {
         if (!currentQuestion.questionId) {
-          toast.error("Không tìm thấy ID câu hỏi để cập nhật");
+          toast.error("Không tìm thấy ID câu hỏi để cập nhật", {
+            toastId: "error-no-question-id",
+          });
           return;
         }
         await updateQuestion(currentQuestion.questionId, questionData);
@@ -179,7 +201,13 @@ const QuestionManagementPage = () => {
         ],
       });
     } catch (err) {
-      toast.error(err.message);
+      console.log("Error handled in handleSubmit:", err.message);
+      const errorMessage = err.response?.data?.code
+        ? getVietnameseMessage(err.response.data.code)
+        : err.message;
+      toast.error(errorMessage, {
+        toastId: `error-submit-${err.response?.data?.code || err.message}`,
+      });
     } finally {
       setLoading(false);
     }
