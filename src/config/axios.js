@@ -39,6 +39,22 @@ const isTokenExpired = (token) => {
 };
 
 instance.interceptors.request.use(async (config) => {
+  // BỎ QUA interceptor cho các API không cần token
+  const skipAuthUrls = [
+    "/auth/register",
+    "/auth/login",
+    "/auth/refresh",
+    "/auth/verify-otp",
+    "/auth/resend-otp",
+    "/auth/forgot-password",
+    "/auth/verify-otp-forgot-password",
+    "/auth/reset-password",
+    // Thêm các API public khác nếu có
+  ];
+  if (skipAuthUrls.some((url) => config.url.includes(url))) {
+    return config;
+  }
+
   const token = localStorage.getItem("accessToken");
 
   if (!token) {

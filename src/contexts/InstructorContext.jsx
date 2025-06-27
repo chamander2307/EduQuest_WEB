@@ -13,6 +13,34 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Hàm này dùng để đồng bộ lại user sau khi cập nhật profile
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setUser(null);
+        setIsLogin(false);
+        return;
+      }
+      const decoded = jwtDecode(token);
+      const profile = await getInstructorProfile();
+      setUser({
+        ...profile,
+        id: decoded.sub,
+        fullName: profile.name,
+        avatarUrl:
+          profile.avatarUrl ||
+          `https://ui-avatars.com/api/?name=${profile.name}&background=random`,
+      });
+      setIsLogin(true);
+    } catch (err) {
+      setUser(null);
+      setIsLogin(false);
+      localStorage.removeItem("accessToken");
+      navigate("/login");
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       const token = localStorage.getItem("accessToken");
@@ -76,6 +104,7 @@ export const UserProvider = ({ children }) => {
         setUser,
         setIsLogin,
         logout,
+        refreshUser,
       }}
     >
       {children}
