@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { UserContext } from "../../contexts/InstructorContext";
 import {
   getInstructorClasses,
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./ClassManagementPage.css";
+import { getVietnameseMessage } from "../../constants/VietNameseStatus";
 
 const ClassManagementPage = () => {
   const { isLogin, loading: userLoading } = useContext(UserContext);
@@ -16,6 +17,7 @@ const ClassManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const errorHandledRef = useRef(false);
 
   useEffect(() => {
     if (!userLoading && !isLogin) {
@@ -37,8 +39,18 @@ const ClassManagementPage = () => {
           numberOfStudents: cls.numberOfStudents,
         }));
         setClasses(mappedClasses);
+        errorHandledRef.current = false; // Reset khi thành công
       } catch (err) {
-        toast.error(err.message);
+        if (!errorHandledRef.current) {
+          console.log("Error handled in fetchClasses:", err.message);
+          const errorMessage = err.response?.data?.code
+            ? getVietnameseMessage(err.response.data.code)
+            : err.message;
+          toast.error(errorMessage, {
+            toastId: `error-fetch-${err.response?.data?.code || err.message}`,
+          });
+          errorHandledRef.current = true;
+        }
       } finally {
         setLoading(false);
       }
@@ -50,7 +62,9 @@ const ClassManagementPage = () => {
   const handleCreateClass = async (e) => {
     e.preventDefault();
     if (!className.trim()) {
-      toast.error("Tên lớp học không được để trống");
+      toast.error("Tên lớp học không được để trống", {
+        toastId: "error-empty-classname",
+      });
       return;
     }
 
@@ -69,7 +83,13 @@ const ClassManagementPage = () => {
       setShowModal(false);
       toast.success("Tạo lớp học thành công!");
     } catch (err) {
-      toast.error(err.message);
+      console.log("Error handled in handleCreateClass:", err.message);
+      const errorMessage = err.response?.data?.code
+        ? getVietnameseMessage(err.response.data.code)
+        : err.message;
+      toast.error(errorMessage, {
+        toastId: `error-create-${err.response?.data?.code || err.message}`,
+      });
     } finally {
       setLoading(false);
     }

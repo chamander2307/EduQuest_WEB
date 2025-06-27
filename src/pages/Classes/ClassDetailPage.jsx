@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -7,6 +7,7 @@ import {
   updateEnrollmentStatus,
 } from "../../services/EnrollmentServices";
 import "./ClassDetailPage.css";
+import { getVietnameseMessage } from "../../constants/VietNameseStatus";
 
 const ClassDetailPage = () => {
   const { classId } = useParams();
@@ -14,7 +15,7 @@ const ClassDetailPage = () => {
   const [pendingEnrollments, setPendingEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const [errorHandled, setErrorHandled] = useState(false);
+  const errorHandledRef = useRef(false);
 
   useEffect(() => {
     const fetchPendingEnrollments = async () => {
@@ -27,15 +28,17 @@ const ClassDetailPage = () => {
           throw new Error("Dữ liệu đăng ký chờ không hợp lệ");
         }
         setPendingEnrollments(response);
+        errorHandledRef.current = false; // Reset khi thành công
       } catch (err) {
-        if (!errorHandled) {
+        if (!errorHandledRef.current) {
           console.log("Error handled in ClassDetailPage:", err.message);
-          toast.error(
-            err.response?.data?.code
-              ? getVietnameseMessage(err.response.data.code)
-              : err.message
-          );
-          setErrorHandled(true);
+          const errorMessage = err.response?.data?.code
+            ? getVietnameseMessage(err.response.data.code)
+            : err.message;
+          toast.error(errorMessage, {
+            toastId: `error-${err.response?.data?.code || err.message}`,
+          });
+          errorHandledRef.current = true;
         }
       } finally {
         setLoading(false);
@@ -44,7 +47,7 @@ const ClassDetailPage = () => {
     };
 
     fetchPendingEnrollments();
-  }, [classId, errorHandled]);
+  }, [classId]);
 
   const handleUpdateEnrollment = async (enrollmentId, status) => {
     if (
@@ -71,11 +74,12 @@ const ClassDetailPage = () => {
       );
     } catch (err) {
       console.log("Error handled in handleUpdateEnrollment:", err.message);
-      toast.error(
-        err.response?.data?.code
-          ? getVietnameseMessage(err.response.data.code)
-          : err.message
-      );
+      const errorMessage = err.response?.data?.code
+        ? getVietnameseMessage(err.response.data.code)
+        : err.message;
+      toast.error(errorMessage, {
+        toastId: `error-update-${err.response?.data?.code || err.message}`,
+      });
     } finally {
       setLoading(false);
     }
