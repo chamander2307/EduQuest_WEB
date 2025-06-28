@@ -58,8 +58,8 @@ const Header = () => {
             <Link to="/students" className="nav-item">
               Sinh viên
             </Link>
-            <Link to="/assignments" className="nav-item">
-              Bài tập
+            <Link to="/exercise-results" className="nav-item">
+              Kết quả bài tập
             </Link>
             <Link to="/questions" className="nav-item">
               Câu hỏi
