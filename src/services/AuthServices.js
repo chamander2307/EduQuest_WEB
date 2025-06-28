@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 
 export const refreshToken = async () => {
   try {
-    const response = await instance.post("/auth/refresh");
+    const response = await instance.post("/auth/refresh-token");
     const data = response.data;
     if (data?.data?.accessToken) {
       localStorage.setItem("accessToken", data.data.accessToken);
