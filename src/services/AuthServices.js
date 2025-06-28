@@ -5,7 +5,15 @@ import { toast } from "react-toastify";
 
 export const refreshToken = async () => {
   try {
-    const response = await instance.post("/auth/refresh-token");
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) {
+      throw new Error("Không tìm thấy refresh token trong localStorage");
+    }
+
+    const response = await instance.post("/auth/refresh-token", {
+      refreshToken,
+    });
+    console.log("Refresh Token:", localStorage.getItem("refreshToken"));
     const data = response.data;
     if (data?.data?.accessToken) {
       localStorage.setItem("accessToken", data.data.accessToken);
@@ -18,6 +26,7 @@ export const refreshToken = async () => {
     );
   } catch (error) {
     const code = error.response?.data?.code;
+    console.error("Lỗi làm mới token:", error.message, "| Mã lỗi:", code);
     throw new Error(
       getVietnameseMessage(code, "Làm mới token") ||
         "Làm mới token không thành công"
