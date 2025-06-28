@@ -40,6 +40,10 @@ const isTokenExpired = (token) => {
 };
 
 instance.interceptors.request.use(async (config) => {
+  if (config.url.includes("/auth/refresh-token")) {
+    console.log("Bỏ qua interceptor cho refresh-token:", config.url);
+    return config;
+  }
   const token = localStorage.getItem("accessToken");
   if (!token) {
     return config;
