@@ -18,9 +18,17 @@ const Header = () => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
+     setAvatarError(false);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
+  }, [user?.avatarUrl]);
+  const [avatarError, setAvatarError] = useState(false);
+  const isValidAvatarUrl = (url) => {
+    if (!url) return false;
+    if (typeof url !== "string") return false;
+    if (url.trim() === "" || url === "null" || url === "undefined") return false;
+    if (url.startsWith("http") || url.startsWith("/")) return true;
+    return false;
+  };
   const handleLogout = async () => {
     await logout();
   };
@@ -67,18 +75,21 @@ const Header = () => {
               ref={userRef}
             >
               <div className="user-avatar">
-                {user?.avatarUrl ? (
-                  <img
-                    src={
-                      user.avatarUrl.startsWith("http")
-                        ? user.avatarUrl
-                        : `http://localhost:8080${user.avatarUrl}`
-                    }
-                    alt="Avatar"
-                    className="user-avatar-img"
-                  />
-                ) : (
-                  getInitial(user?.fullName || "Instructor")
+                  {isValidAvatarUrl(user?.avatarUrl) && !avatarError ? (
+                    <img
+                      src={
+                        user.avatarUrl.startsWith("http")
+                          ? user.avatarUrl
+                          : `http://localhost:8080${user.avatarUrl}`
+                      }
+                      alt=""
+                      className="user-avatar-img"
+                      onError={() => setAvatarError(true)}
+                    />
+                  ) : (
+                    <span className="user-avatar-placeholder">
+                      {getInitial(user?.fullName || "Instructor")}
+                    </span>
                 )}
               </div>
               <span className="username">{user?.fullName || "Instructor"}</span>

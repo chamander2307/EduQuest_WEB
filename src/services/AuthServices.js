@@ -1,21 +1,20 @@
 import instance from "../config/axios";
+import { jwtDecode } from "jwt-decode";
 import { getVietnameseMessage } from "../constants/VietNameseStatus";
+import { toast } from "react-toastify";
 
 export const refreshToken = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/auth/refresh", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) {
+      throw new Error("Không tìm thấy refresh token trong localStorage");
     }
-    
-    const data = await response.json();
+
+    const response = await instance.post("/auth/refresh-token", {
+      refreshToken,
+    });
+    console.log("Refresh Token:", localStorage.getItem("refreshToken"));
+    const data = response.data;
     if (data?.data?.accessToken) {
       localStorage.setItem("accessToken", data.data.accessToken);
       localStorage.setItem("refreshToken", data.data.refreshToken);
@@ -26,8 +25,12 @@ export const refreshToken = async () => {
         "Làm mới token không thành công"
     );
   } catch (error) {
-    console.error("RefreshToken error:", error);
-    throw new Error("Làm mới token không thành công");
+    const code = error.response?.data?.code;
+    console.error("Lỗi làm mới token:", error.message, "| Mã lỗi:", code);
+    throw new Error(
+      getVietnameseMessage(code, "Làm mới token") ||
+        "Làm mới token không thành công"
+    );
   }
 };
 
@@ -63,9 +66,19 @@ export const login = async (username, password) => {
     const response = await instance.post("/auth/login", { username, password });
     const data = response.data;
     if (data?.data?.accessToken) {
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      return data.data;
+      console.log("respone tu login:", data);
+      const decoded = jwtDecode(data.data.accessToken);
+      console.log("Decoded token:", decoded);
+      if (decoded?.role === "ROLE_STUDENT") {
+        toast.error(
+          "Tài khoản của bạn không có quyền truy cập vào hệ thống này. Vui lòng đăng nhập bằng tài khoản giáo viên."
+        );
+        return null;
+      } else {
+        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
+        return data.data;
+      }
     }
     throw new Error(
       getVietnameseMessage(data.code, "Đăng nhập") ||

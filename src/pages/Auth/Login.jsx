@@ -26,7 +26,12 @@ const LoginPage = () => {
 
     try {
       const data = await login(username, password);
+      if(data === null) {
+        return;
+      }
+      console.log("Đăng nhập thành công:", data);
       const { accessToken, refreshToken, ...userInfo } = data;
+      console.log("Đăng nhập thành công:", data);
 
       setUser(userInfo);
       setIsLogin(true);

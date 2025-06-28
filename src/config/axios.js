@@ -1,5 +1,6 @@
 import axios from "axios";
 
+// Tạo instance Axios với cấu hình cơ bản
 const instance = axios.create({
   baseURL: "http://localhost:8080/api",
   withCredentials: true,
@@ -46,7 +47,9 @@ const isTokenExpired = (token) => {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Math.floor(Date.now() / 1000);
-    return payload.exp < currentTime;
+    const isExpired = payload.exp < currentTime;
+    console.log(`Token expiry check: ${isExpired ? "Expired" : "Valid"}`);
+    return isExpired;
   } catch (e) {
     console.error("Error decoding token:", e.message);
     return true;
@@ -54,13 +57,66 @@ const isTokenExpired = (token) => {
 };
 
 instance.interceptors.request.use(async (config) => {
-  const token = localStorage.getItem("accessToken");
-
-  if (token && !isTokenExpired(token)) {
-    config.headers["Authorization"] = `Bearer ${token}`;
+  if (config.url.includes("/auth/refresh-token")) {
+    console.log("Bỏ qua interceptor cho refresh-token:", config.url);
+    return config;
   }
-  
-  return config;
+  const token = localStorage.getItem("accessToken");
+  if (!token) {
+    return config;
+  }
+
+  if (!isTokenExpired(token)) {
+    config.headers["Authorization"] = `Bearer ${token}`;
+    return config;
+  }
+
+  if (isRefreshing) {
+    console.log(`Queueing request while refreshing: ${config.url}`);
+    return new Promise((resolve, reject) => {
+      failedQueue.push({
+        resolve: (newToken) => {
+          config.headers["Authorization"] = `Bearer ${newToken}`;
+          resolve(config);
+        },
+        reject,
+      });
+    });
+  }
+
+  isRefreshing = true;
+  try {
+    const data = await refreshToken();
+    const newToken = data?.accessToken;
+    if (!newToken) {
+      throw new Error("No new access token received");
+    }
+    localStorage.setItem("accessToken", newToken);
+    console.log("Token refreshed successfully");
+    processQueue(null, newToken);
+    config.headers["Authorization"] = `Bearer ${newToken}`;
+    return config;
+  } catch (error) {
+    const code = error.response?.data?.code;
+    const message = error.response?.data?.message;
+    console.error(
+      "Refresh token failed:",
+      error.message,
+      "| Backend code:",
+      code,
+      "| Backend message:",
+      message
+    );
+    processQueue(error, null);
+    localStorage.removeItem("accessToken");
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 100);
+    throw error;
+  } finally {
+    isRefreshing = false;
+    console.log("Token refresh completed, isRefreshing:", isRefreshing);
+  }
 });
 
 instance.interceptors.response.use(
@@ -73,7 +129,7 @@ instance.interceptors.response.use(
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
-      
+
       if (!isRefreshing) {
         isRefreshing = true;
         try {
@@ -82,7 +138,8 @@ instance.interceptors.response.use(
           if (!newToken) {
             throw new Error("No new access token received");
           }
-          
+          localStorage.setItem("accessToken", newToken);
+          console.log("Token refreshed on retry");
           processQueue(null, newToken);
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
           return instance(originalRequest);
@@ -96,20 +153,19 @@ instance.interceptors.response.use(
         } finally {
           isRefreshing = false;
         }
-      } else {
-        // Nếu đang refresh, queue request này
-        return new Promise((resolve, reject) => {
-          failedQueue.push({
-            resolve: (newToken) => {
-              originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-              resolve(instance(originalRequest));
-            },
-            reject: () => reject(error),
-          });
-        });
       }
+
+      return new Promise((resolve, reject) => {
+        failedQueue.push({
+          resolve: (newToken) => {
+            originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+            resolve(instance(originalRequest));
+          },
+          reject,
+        });
+      });
     }
-    
+
     return Promise.reject(error);
   }
 );
