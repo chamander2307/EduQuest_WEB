@@ -13,17 +13,26 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Hàm này dùng để đồng bộ lại user sau khi cập nhật profile
-  const refreshUser = async () => {
+  // Đưa init ra ngoài để dùng lại
+  const init = async (withLoading = true) => {
+    if (withLoading) setLoading(true);
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      if (withLoading) setLoading(false);
+      setUser(null);
+      setIsLogin(false);
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        setUser(null);
-        setIsLogin(false);
-        return;
-      }
       const decoded = jwtDecode(token);
       const profile = await getInstructorProfile();
+      if (profile.role === "STUDENT") {
+        setTimeout(() => {
+          logout();
+        }, 2000);
+        return;
+      }
       setUser({
         ...profile,
         id: decoded.sub,
@@ -34,52 +43,23 @@ export const UserProvider = ({ children }) => {
       });
       setIsLogin(true);
     } catch (err) {
+      console.error("Lỗi xác thực người dùng:", err);
+      localStorage.removeItem("accessToken");
       setUser(null);
       setIsLogin(false);
-      localStorage.removeItem("accessToken");
       navigate("/login");
+    } finally {
+      if (withLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
-    const init = async () => {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const decoded = jwtDecode(token);
-        const profile = await getInstructorProfile();
-        if (profile.role === "STUDENT") {
-          setTimeout(() => {
-            logout();
-          }, 2000);
-          return;
-        }
-        setUser({
-          ...profile,
-          id: decoded.sub,
-          fullName: profile.name,
-          avatarUrl:
-            profile.avatarUrl ||
-            `https://ui-avatars.com/api/?name=${profile.name}&background=random`,
-        });
-        setIsLogin(true);
-      } catch (err) {
-        console.error("Lỗi xác thực người dùng:", err);
-        localStorage.removeItem("accessToken");
-        setUser(null);
-        setIsLogin(false);
-        navigate("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     init();
   }, [navigate]);
+
+  const refreshUser = async () => {
+    await init(false);
+  };
 
   const logout = async () => {
     try {
