@@ -3,7 +3,7 @@ import { getVietnameseMessage } from "../constants/VietNameseStatus";
 
 export const updateInstructorProfile = async (profileData) => {
   try {
-    const response = await instance.put("/update/me", profileData);
+    const response = await instance.put("/update/profile", profileData);
     const data = response.data;
     if (data?.data) {
       return data.data;

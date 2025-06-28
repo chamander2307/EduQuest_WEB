@@ -8,6 +8,7 @@ import RegisterPage from "../pages/Auth/Register";
 import ClassManagementPage from "../pages/Classes/ClassManagementPage";
 import ClassDetailPage from "../pages/Classes/ClassDetailPage";
 import QuestionManagementPage from "../pages/Question/QuestionManagementPage";
+import ProfilePage from "../pages/Profile/ProfilePage";
 import HomePage from "../pages/HomePage/HomePage";
 
 const ProtectedRoute = ({ element }) => {
@@ -27,6 +28,7 @@ const AppRoutes = () => {
       {/* Protected routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
       <Route
         path="/classes"
         element={<ProtectedRoute element={<ClassManagementPage />} />}

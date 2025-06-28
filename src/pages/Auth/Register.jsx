@@ -129,7 +129,7 @@ const RegisterPage = () => {
     e.preventDefault();
 
     try {
-      const data = await verifyRegisterOtp(otp);
+      const data = await verifyRegisterOtp(username, otp);
       const { accessToken, refreshToken, ...userInfo } = data;
 
       setUser({ ...userInfo, fullName: userInfo.name });

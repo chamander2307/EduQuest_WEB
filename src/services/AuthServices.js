@@ -66,7 +66,7 @@ export const login = async (username, password) => {
     const response = await instance.post("/auth/login", { username, password });
     const data = response.data;
     if (data?.data?.accessToken) {
-      console.log("Login response data:", data);
+      console.log("respone tu login:", data);
       const decoded = jwtDecode(data.data.accessToken);
       console.log("Decoded token:", decoded);
       if (decoded?.role === "ROLE_STUDENT") {
