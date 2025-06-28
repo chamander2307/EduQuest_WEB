@@ -3,8 +3,19 @@ import { getVietnameseMessage } from "../constants/VietNameseStatus";
 
 export const refreshToken = async () => {
   try {
-    const response = await instance.post("/auth/refresh");
-    const data = response.data;
+    const response = await fetch("http://localhost:8080/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
     if (data?.data?.accessToken) {
       localStorage.setItem("accessToken", data.data.accessToken);
       localStorage.setItem("refreshToken", data.data.refreshToken);
@@ -15,11 +26,8 @@ export const refreshToken = async () => {
         "Làm mới token không thành công"
     );
   } catch (error) {
-    const code = error.response?.data?.code;
-    throw new Error(
-      getVietnameseMessage(code, "Làm mới token") ||
-        "Làm mới token không thành công"
-    );
+    console.error("RefreshToken error:", error);
+    throw new Error("Làm mới token không thành công");
   }
 };
 

@@ -367,32 +367,52 @@
   font-family: monospace;
 }
 
+/* Action Buttons Styles */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.view-detail-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0;
+}
+
+.view-detail-btn:hover {
+  background: linear-gradient(135deg, #5a67d8, #6b46c1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.view-detail-btn:active {
+  transform: translateY(0);
+}
+
+.view-detail-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Responsive adjustments for action buttons */
 @media (max-width: 768px) {
-  .exercise-results-container {
-    padding: 1rem;
+  .view-detail-btn {
+    width: 2rem;
+    height: 2rem;
   }
   
-  .exercises-grid, .class-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .results-table {
-    font-size: 0.875rem;
-  }
-  
-  .results-table th,
-  .results-table td {
-    padding: 0.75rem 0.5rem;
-  }
-  
-  .student-info {
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
-  }
-  
-  .results-summary {
-    flex-direction: column;
-    gap: 0.5rem;
+  .view-detail-btn svg {
+    width: 1rem;
+    height: 1rem;
   }
 }

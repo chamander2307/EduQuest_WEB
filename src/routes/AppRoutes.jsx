@@ -11,6 +11,7 @@ import QuestionManagementPage from "../pages/Question/QuestionManagementPage";
 import HomePage from "../pages/HomePage/HomePage";
 import StudentManagementPage from "../pages/Students/StudentManagementPage";
 import ExerciseResultsPage from "../pages/Exercise/ExerciseResultsPage";
+import StudentExerciseDetailPage from "../pages/Exercise/StudentExerciseDetailPage";
 
 const ProtectedRoute = ({ element }) => {
   const { isLogin, loading } = useContext(UserContext);
@@ -48,6 +49,10 @@ const AppRoutes = () => {
       <Route
         path="/exercise-results"
         element={<ProtectedRoute element={<ExerciseResultsPage />} />}
+      />
+      <Route
+        path="/exercise/student-detail/:participationId"
+        element={<ProtectedRoute element={<StudentExerciseDetailPage />} />}
       />
     </Routes>
   );
