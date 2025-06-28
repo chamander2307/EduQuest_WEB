@@ -28,6 +28,7 @@ const ProfilePage = () => {
     };
     fetchProfile();
   }, []);
+  
 
   // Kiểm tra url ảnh hợp lệ - đồng nhất với Header
   const isValidAvatarUrl = (url) => {
@@ -37,6 +38,7 @@ const ProfilePage = () => {
     if (url.startsWith("http") || url.startsWith("/") || url.startsWith("blob:")) return true;
     return false;
   };
+  
 
   const getInitial = (name) => {
     return name ? name.charAt(0).toUpperCase() : "I";
@@ -131,26 +133,18 @@ const ProfilePage = () => {
 
   return (
   <div className="profile-bg-v2">
-    <div className="profile-header-v2 profile-header-fixed-v2  animate-fadein">
-      <h1>Thông tin cá nhân</h1>
-      <p>Quản lý thông tin tài khoản của bạn</p>
-    </div>
     <div className="profile-card-v2 animate-slideup">
       {/* Left */}
       <div className="profile-left-v2">
-            <div className="profile-avatar-v2">
+        <div className="profile-avatar-v2">
           {editMode && preview ? (
             <img src={preview} alt="avatar" />
           ) : isValidAvatarUrl(profile.avatarUrl) && !avatarError ? (
             <img src={profile.avatarUrl} alt="avatar" />
           ) : (
-            <div className="profile-avatar-placeholder-v2">
-              <svg width="60" height="60" fill="none" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" fill="#e5e7eb"/>
-                <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4Z" stroke="#94a3b8" strokeWidth="1.5"/>
-                <circle cx="12" cy="7" r="4" stroke="#94a3b8" strokeWidth="1.5"/>
-              </svg>
-            </div>
+            <span className="user-avatar-placeholder">
+              {getInitial(profile.fullName || profile.name)}
+            </span>
           )}
         </div>
         <div className="profile-name-v2">{profile.name}</div>
@@ -166,53 +160,33 @@ const ProfilePage = () => {
       </div>
       {/* Right */}
       <div className="profile-right-v2">
+        <div className="profile-info-header-v2">
+          <h2>Thông tin cá nhân</h2>
+        </div>
         {editMode ? (
-          <form onSubmit={handleUpdate}>
-            <div className="profile-info-card-v2 animate-pop">
-              <div className="profile-info-icon-v2">
-                <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
-                  <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4Z" stroke="#2563eb" strokeWidth="1.5"/>
-                  <circle cx="12" cy="7" r="4" stroke="#2563eb" strokeWidth="1.5"/>
-                </svg>
-              </div>
-              <div>
-                <div className="profile-info-label-v2">Họ và tên</div>
-                <div className="profile-info-value-v2">{profile.name}</div>
-              </div>
-            </div>
-            <div className="profile-info-card-v2 animate-pop">
-              <div className="profile-info-icon-v2">
-                <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
-                  <path d="M2 4v16h20V4H2Zm2 2h16v12H4V6Zm8 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 6c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z" fill="#2563eb"/>
-                </svg>
-              </div>
-              <div>
-                <div className="profile-info-label-v2">Email</div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="profile-input-v2"
-                  style={{marginTop: 4}}
+          <form onSubmit={handleUpdate} className="profile-edit-form-v2">
+            <div style={{ marginBottom: 16 }}>
+              <label>Ảnh đại diện:</label>
+              <input type="file" accept="image/*" onChange={handleAvatarChange} />
+              {preview && (
+                <img
+                  src={preview}
+                  alt="avatar preview"
+                  style={{ width: 80, height: 80, marginTop: 8, borderRadius: "50%" }}
                 />
-              </div>
+              )}
             </div>
-            <div className="profile-info-card-v2 animate-pop">
-              <div className="profile-info-icon-v2">
-                <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="#2563eb" strokeWidth="1.5"/>
-                  <path d="M12 7v6l4 2" stroke="#2563eb" strokeWidth="1.5"/>
-                </svg>
-              </div>
-              <div>
-                <div className="profile-info-label-v2">Avatar</div>
-                <input type="file" accept="image/*" onChange={handleAvatarChange} style={{marginTop: 4}} />
-              </div>
+            <div style={{ marginBottom: 16 }}>
+              <label>Email:</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
             </div>
-            <div className="profile-edit-actions-v2">
-              <button className="profile-btn-v2" type="submit">Lưu</button>
-              <button className="profile-btn-v2 cancel" type="button" onClick={() => setEditMode(false)}>Hủy</button>
-            </div>
+            <button type="submit" style={{ marginRight: 8 }}>Lưu</button>
+            <button type="button" onClick={() => setEditMode(false)}>Hủy</button>
           </form>
         ) : (
           <>
@@ -247,25 +221,25 @@ const ProfilePage = () => {
               </div>
             </div>
             <div className="profile-info-card-v2 animate-pop">
-          <div className="profile-info-icon-v2">
-            <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke="#2563eb" strokeWidth="1.5"/>
-              <path d="M12 6v6l4 2" stroke="#2563eb" strokeWidth="1.5"/>
-            </svg>
-          </div>
-          <div>
-            <div className="profile-info-label-v2">Ngày tham gia</div>
-            <div className="profile-info-value-v2">
-              {profile.createdAt
-                ? new Date(profile.createdAt).toLocaleDateString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric"
-                  })
-                : "Không rõ"}
+              <div className="profile-info-icon-v2">
+                <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="#2563eb" strokeWidth="1.5"/>
+                  <path d="M12 6v6l4 2" stroke="#2563eb" strokeWidth="1.5"/>
+                </svg>
+              </div>
+              <div>
+                <div className="profile-info-label-v2">Ngày tham gia</div>
+                <div className="profile-info-value-v2">
+                  {profile.createdAt
+                    ? new Date(profile.createdAt).toLocaleDateString("vi-VN", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric"
+                      })
+                    : "Không rõ"}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
           </>
         )}
       </div>
