@@ -1,0 +1,220 @@
+.discussion-comment-message {
+  max-width: 650px;
+  margin: 24px auto 0 auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(60,80,140,0.06);
+  display: flex;
+  flex-direction: column;
+  height: 78vh;
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 20px 12px 10px;
+  background: #fff;
+  border-bottom: 1px solid #f1f5f9;
+}
+.chat-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2563eb;
+  flex: 1;
+}
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 1.35rem;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 7px;
+  transition: background 0.13s;
+}
+.back-btn:hover {
+  background: #f0f4fa;
+}
+
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ============= BUBBLE MESSAGE ============= */
+.chat-message {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 2px;
+  max-width: 100%;
+}
+
+.chat-message.other {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.chat-message.mine {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+/* Avatar */
+.chat-avatar {
+  margin: 0 8px;
+}
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  background: #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.avatar-circle.mine {
+  background: #2563eb;
+  color: #fff;
+}
+
+/* Tên người gửi */
+.chat-author {
+  font-size: 0.96rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+  margin-left: 2px;
+  color: #2563eb;
+}
+
+/* Bong bóng chat */
+.chat-content {
+  background: #e5e7eb;
+  color: #333;
+  padding: 9px 16px;
+  border-radius: 16px;
+  font-size: 1rem;
+  max-width: 400px;
+  word-break: break-word;
+  margin-bottom: 2px;
+  box-shadow: 0 2px 10px rgba(40, 80, 140, 0.06);
+}
+.chat-message.mine .chat-content {
+  background: #2563eb;
+  color: #fff;
+}
+
+/* Thời gian gửi */
+.chat-time {
+  font-size: 0.82rem;
+  color: #999;
+  margin-top: 2px;
+  text-align: right;
+  margin-right: 2px;
+}
+
+/* Input và nút gửi */
+.chat-footer {
+  display: flex;
+  border-top: 1px solid #f1f5f9;
+  background: #fff;
+  padding: 12px 20px;
+  gap: 8px;
+}
+.chat-input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  transition: border 0.13s;
+}
+.chat-input:focus {
+  border-color: #2563eb;
+}
+.chat-send-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.13s;
+}
+.chat-send-btn:hover {
+  background: #1d4ed8;
+}
+
+
+/* Hiển thị cột nội dung và cột avatar luôn thẳng hàng */
+.chat-message {
+  align-items: flex-end;
+}
+.chat-content-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+.chat-message.mine .chat-content-col {
+  align-items: flex-end;
+}
+
+.chat-content-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+}
+.chat-like-btn {
+  background: none;
+  border: none;
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 8px;
+  transition: background 0.12s, color 0.15s;
+}
+.chat-like-btn.liked {
+  color: #2563eb;
+  background: #e0e7ff;
+}
+.chat-like-btn:hover {
+  background: #e5e7eb;
+}
+.like-count {
+  margin-left: 2px;
+  font-size: 0.95em;
+  min-width: 14px;
+}
+
+.chat-time-above {
+  font-size: 0.85em;
+  color: #64748b;
+  margin-bottom: 2px;
+  margin-left: 4px;
+  margin-right: 4px;
+  text-align: left;
+  font-style: italic;
+}
+.chat-message.mine .chat-time-above {
+  text-align: right;
+  margin-left: 0;
+  margin-right: 4px;
+}

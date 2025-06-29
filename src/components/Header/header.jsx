@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./navbar.css";
 import { UserContext } from "../../contexts/InstructorContext";
 import Logo from "../../assets/images/Eduquest.svg";
@@ -57,6 +57,9 @@ const Header = () => {
             </Link>
             <Link to="/exercise-results" className="nav-item">
               Kết quả bài tập
+            </Link>
+            <Link to="/exercises" className="nav-item">
+              Bài tập
             </Link>
             <Link to="/questions" className="nav-item">
               Câu hỏi
