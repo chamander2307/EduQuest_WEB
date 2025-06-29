@@ -3,7 +3,7 @@ import instance from "../config/axios";
 export const exportStudentScoresToExcel = async (classId, exerciseId) => {
   try {
     const response = await instance.get(
-      `/classes/${classId}/exercises/${exerciseId}/export-scores`,
+      `exercises/classes/${classId}/exercises/${exerciseId}/export-scores`,
       {
         responseType: "blob", 
       }
