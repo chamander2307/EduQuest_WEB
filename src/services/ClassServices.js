@@ -60,3 +60,18 @@ export const getClassStudents = async (classId) => {
     );
   }
 };
+
+export const getClassesByInstructor = async () => {
+  try {
+    const response = await instance.get("/classes/instructors/simple");
+    const data = response.data;
+    if (data?.data) return data.data;
+    throw new Error("Không lấy được danh sách lớp");
+  } catch (error) {
+    throw new Error(
+      error?.response?.data?.message ||
+      error?.message ||
+      "Không lấy được danh sách lớp"
+    );
+  }
+};

@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode";
 import { getInstructorProfile } from "../services/InstructorServices";
 import { logout as performLogout } from "../services/AuthServices";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
 export const UserContext = createContext();
 
