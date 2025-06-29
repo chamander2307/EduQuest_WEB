@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
-import axios from "../../config/axios";
 import { toast } from "react-toastify";
 import { UserContext } from "../../contexts/InstructorContext";
 import "./ProfilePage.css";
+import { getInstructorProfile, updateInstructorProfile } from "../../services/InstructorServices";
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
@@ -11,25 +11,27 @@ const ProfilePage = () => {
   const [avatar, setAvatar] = useState(null);
   const [preview, setPreview] = useState("");
   const [avatarError, setAvatarError] = useState(false);
-
   const { refreshUser } = useContext(UserContext);
 
+  // Đưa fetchProfile ra ngoài để dùng lại
+  const fetchProfile = async () => {
+    try {
+      const data = await getInstructorProfile();
+      setProfile(data);
+      setEmail(data.email);
+      setPreview(data.avatarUrl);
+      setAvatarError(false);
+    } catch (err) {
+      toast.error("Không lấy được thông tin tài khoản");
+      // Log lỗi chi tiết
+      console.error("Lỗi lấy profile:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await axios.get("/Profile/me");
-        setProfile(res.data.data);
-        setEmail(res.data.data.email);
-        setPreview(res.data.data.avatarUrl);
-        setAvatarError(false);
-      } catch (err) {
-        toast.error("Không lấy được thông tin tài khoản");
-      }
-    };
     fetchProfile();
   }, []);
 
-  // Kiểm tra url ảnh hợp lệ - đồng nhất với Header
   const isValidAvatarUrl = (url) => {
     if (!url) return false;
     if (typeof url !== "string") return false;
@@ -58,36 +60,29 @@ const ProfilePage = () => {
     if (avatar) formData.append("avatar", avatar);
 
     try {
-      await axios.put("/update/profile", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      // Lấy lại profile mới từ BE để cập nhật avatar mới nhất
-      const profileRes = await axios.get("/Profile/me");
-      setProfile(profileRes.data.data);
-      setEmail(profileRes.data.data.email);
-      setPreview(profileRes.data.data.avatarUrl);
+      await updateInstructorProfile(formData);
+      await fetchProfile(); // Load lại thông tin mới
       setEditMode(false);
       setAvatar(null);
       setAvatarError(false);
       await refreshUser();
       toast.success("Cập nhật thành công!");
     } catch (err) {
-      toast.error("Cập nhật thất bại!");
+      // Log lỗi chi tiết
+      console.error("Lỗi cập nhật profile:", err);
+      toast.error(err.message || "Cập nhật thất bại!");
     }
   };
 
   if (!profile) return <div>Đang tải...</div>;
 
-  // Hiển thị vai trò tiếng Việt
   const getRoleLabel = (role) => {
     if (role === "INSTRUCTOR") return "Giảng viên";
     return role;
   };
 
-  // Avatar đồng nhất với Header: có ảnh thì hiện ảnh, không có thì hiện ký tự đầu tên
+
   const renderAvatar = () => {
-    // Khi đang edit, ưu tiên preview (ảnh mới chọn)
     if (editMode) {
       if (isValidAvatarUrl(preview) && !avatarError) {
         return (
@@ -106,7 +101,6 @@ const ProfilePage = () => {
       );
     }
 
-    // Khi không edit, ưu tiên avatarUrl từ profile - đồng nhất với Header
     if (isValidAvatarUrl(profile.avatarUrl) && !avatarError) {
       return (
         <img
@@ -162,6 +156,9 @@ const ProfilePage = () => {
       </div>
       {/* Right */}
       <div className="profile-right-v2">
+        <div className="profile-info-header-v2">
+          <h2>Thông tin cá nhân</h2>
+        </div>
         {editMode ? (
           <form onSubmit={handleUpdate}>
             <div className="profile-info-card-v2 animate-pop">
@@ -182,14 +179,13 @@ const ProfilePage = () => {
                   <path d="M2 4v16h20V4H2Zm2 2h16v12H4V6Zm8 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm0 6c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z" fill="#2563eb"/>
                 </svg>
               </div>
-              <div>
+              <div className="profile-info-content-v2">
                 <div className="profile-info-label-v2">Email</div>
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="profile-input-v2"
-                  style={{marginTop: 4}}
                 />
               </div>
             </div>
