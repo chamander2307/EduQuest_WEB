@@ -9,7 +9,7 @@ import "./StudentExerciseDetailPage.css";
 const StudentExerciseDetailPage = () => {
   const { participationId } = useParams();
   const navigate = useNavigate();
-  const { isLogin, loading: userLoading } = useContext(UserContext);
+  const { isLogin, loading: userLoading, token } = useContext(UserContext);
   
   const [exerciseDetail, setExerciseDetail] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,13 +26,12 @@ const StudentExerciseDetailPage = () => {
   useEffect(() => {
     const loadExerciseDetail = async () => {
       if (!isLogin || !participationId) return;
-      
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await getStudentExerciseDetail(participationId);
+        const response = await getStudentExerciseDetail(participationId, token);
         setExerciseDetail(response.data);
+        console.log('Exercise Detail:', response.data);
       } catch (error) {
         console.error('Error loading exercise detail:', error);
         setError(error.message || 'Không thể tải chi tiết bài làm');
@@ -41,9 +40,8 @@ const StudentExerciseDetailPage = () => {
         setLoading(false);
       }
     };
-
     loadExerciseDetail();
-  }, [isLogin, participationId]);
+  }, [isLogin, participationId, token]);
 
   const getAnswerClass = (question, option) => {
     const isCorrect = option.optionId === question.correctOptionId;
@@ -180,15 +178,11 @@ const StudentExerciseDetailPage = () => {
           
           <div className="header-content">
             <h1 className="exercise-title">{exerciseDetail.exerciseName}</h1>
-            <p className="exercise-subtitle">Chi tiết bài làm của sinh viên</p>
           </div>
         </div>
 
         {/* Student Info */}
         <div className="student-info-card">
-          <div className="student-avatar">
-            {getStudentInitials(exerciseDetail.studentName)}
-          </div>
           <div className="student-details">
             <h3>{exerciseDetail.studentName}</h3>
             <p>Mã sinh viên: {exerciseDetail.studentCode}</p>
@@ -224,35 +218,38 @@ const StudentExerciseDetailPage = () => {
 
         {/* Questions */}
         <div className="questions-section">
-          <div className="section-header">
-            <h2>Danh sách câu hỏi và đáp án</h2>
-            <p>Xem chi tiết từng câu hỏi và đáp án đã chọn</p>
-          </div>
 
           <div className="questions-grid">
-            {exerciseDetail.questions?.map((question, index) => (
-              <div key={question.questionId} className="question-card">
+            {exerciseDetail.questions?.map((item, index) => (
+              <div key={item.question.id} className="question-card">
                 <div className="question-header">
                   <span className="question-number">Câu {index + 1}</span>
-                  <span className={`question-result ${question.selectedOptionId === question.correctOptionId ? 'correct' : 'incorrect'}`}>
-                    {question.selectedOptionId === question.correctOptionId ? 'Đúng' : 'Sai'}
+                  <span className={`question-result ${item.selectedAnswer === item.correctAnswer ? 'correct' : 'incorrect'}`}>
+                    {item.selectedAnswer === undefined ? 'Chưa trả lời' : item.selectedAnswer === item.correctAnswer ? 'Đúng' : 'Sai'}
                   </span>
                 </div>
 
                 <div className="question-content">
-                  <h4 className="question-text">{question.questionText}</h4>
+                  <h4 className="question-text">{item.question.content}</h4>
                   
                   <div className="options-list">
-                    {question.options?.map((option) => (
+                    {item.question.answers?.map((answer) => (
                       <div 
-                        key={option.optionId}
-                        className={`option-item ${getAnswerClass(question, option)}`}
+                        key={answer.id}
+                        className={`option-item ${
+                          item.selectedAnswer === undefined
+                            ? 'answer-default'
+                            : item.selectedAnswer === answer.id
+                            ? item.selectedAnswer === item.correctAnswer
+                              ? 'answer-correct-selected'
+                              : 'answer-wrong-selected'
+                            : answer.id === item.correctAnswer
+                            ? 'answer-correct-unselected'
+                            : 'answer-default'
+                        }`}
                       >
-                        <div className="option-icon">
-                          {getAnswerIcon(question, option)}
-                        </div>
                         <div className="option-text">
-                          {option.optionText}
+                          {answer.content}
                         </div>
                       </div>
                     ))}

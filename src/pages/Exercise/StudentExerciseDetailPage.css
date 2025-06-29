@@ -63,23 +63,9 @@
   margin-bottom: 2rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   gap: 2rem;
-  align-items: center;
-}
-
-.student-avatar {
-  width: 4rem;
-  height: 4rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  align-items: start;
 }
 
 .student-details h3 {
@@ -97,43 +83,49 @@
 
 .student-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: auto 1fr;
   gap: 1rem;
+  align-items: center;
+  justify-self: end;
 }
 
 .stat-item {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1.5rem;
+  display: contents;
 }
 
 .stat-label {
   font-size: 0.875rem;
   color: #6b7280;
   font-weight: 500;
+  text-align: left  ;
+  padding-right: 1rem;
 }
 
 .stat-value {
   font-size: 0.875rem;
   font-weight: 600;
   color: #1f2937;
+  text-align: left;
 }
 
 .stat-value.score-excellent {
   color: #059669;
+  background: none;
 }
 
 .stat-value.score-good {
   color: #d97706;
+  background: none;
 }
 
 .stat-value.score-average {
   color: #dc2626;
+  background: none;
 }
 
 .stat-value.score-pending {
   color: #6b7280;
+  background: none;
 }
 
 /* Questions Section */
@@ -379,7 +371,8 @@
   }
 
   .student-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: auto 1fr;
+    justify-self: center;
   }
 
   .header-content .exercise-title {
@@ -395,7 +388,8 @@
 
 @media (max-width: 480px) {
   .student-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto 1fr;
+    justify-self: center;
   }
 
   .header-content .exercise-title {
