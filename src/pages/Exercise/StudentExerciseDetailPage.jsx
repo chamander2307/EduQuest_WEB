@@ -218,6 +218,10 @@ const StudentExerciseDetailPage = () => {
 
         {/* Questions */}
         <div className="questions-section">
+          <div className="section-header">
+            <h2>Chi tiết bài làm</h2>
+            <p>Xem lại câu trả lời và kết quả từng câu hỏi</p>
+          </div>
 
           <div className="questions-grid">
             {exerciseDetail.questions?.map((item, index) => (
