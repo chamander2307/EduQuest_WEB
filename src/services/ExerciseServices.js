@@ -5,7 +5,7 @@ import { getVietnameseMessage } from "../constants/VietNameseStatus";
 // Lấy danh sách bài tập của instructor theo lớp
 export const getClassExercises = async (classId) => {
   try {
-    const response = await axios.get(`/exam/instructor/classes/${classId}/exercises`);
+    const response = await axios.get(`/instructor/classes/${classId}/exercises`);
     return response.data;
   } catch (error) {
     console.error('Error fetching class exercises:', error);
@@ -16,7 +16,7 @@ export const getClassExercises = async (classId) => {
 // Lấy kết quả bài tập của sinh viên
 export const getExerciseResults = async (exerciseId) => {
   try {
-    const response = await axios.get(`/exam/${exerciseId}/results`);
+    const response = await axios.get(`/${exerciseId}/results`);
     return response.data;
   } catch (error) {
     console.error('Error fetching exercise results:', error);

@@ -7,6 +7,19 @@ const DIFFICULTY_LABELS = {
   HARD: 'Khó',
 };
 
+function getNowForInput() {
+  const now = new Date();
+  const pad = n => n.toString().padStart(2, '0');
+  return [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate())
+  ].join('-') + 'T' + [
+    pad(now.getHours()),
+    pad(now.getMinutes())
+  ].join(':');
+}
+
 export default function CreateExerciseModal({
   show,
   onClose,
@@ -24,61 +37,96 @@ export default function CreateExerciseModal({
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('');
+  const [formError, setFormError] = useState('');
+  const [startAtError, setStartAtError] = useState('');
+  const [durationError, setDurationError] = useState('');
 
-  // Chuẩn hóa questions chỉ lấy những câu có id thực, đồng bộ difficulty viết hoa
-  const normalizedQuestions = useMemo(() =>
-    (questions || [])
-      .filter(q => q.id !== undefined && q.id !== null)
-      .map(q => ({
-        ...q,
-        difficulty: (q.difficulty ?? 'EASY').toUpperCase(),
-      })),
+  const nowString = getNowForInput();
+
+  // Chuẩn hóa questions
+  const normalizedQuestions = useMemo(
+    () =>
+      (questions || [])
+        .filter(q => q.questionId !== undefined && q.questionId !== null)
+        .map(q => ({
+          ...q,
+          id: q.questionId,
+          difficulty: (q.difficulty ?? 'EASY').toUpperCase(),
+        })),
     [questions]
   );
 
-  // Lọc câu hỏi theo tìm kiếm và mức độ
-  const filteredQuestions = useMemo(() =>
-    normalizedQuestions.filter(q =>
-      q.content.toLowerCase().includes(searchText.toLowerCase()) &&
-      (difficultyFilter ? q.difficulty === difficultyFilter : true)
-    ),
+  // Lọc câu hỏi
+  const filteredQuestions = useMemo(
+    () =>
+      normalizedQuestions.filter(
+        q =>
+          q.content.toLowerCase().includes(searchText.toLowerCase()) &&
+          (difficultyFilter ? q.difficulty === difficultyFilter : true)
+      ),
     [normalizedQuestions, searchText, difficultyFilter]
   );
 
-  // Xử lý form
-  const handleInputChange = (e) => {
+  const handleInputChange = e => {
+    setFormError('');
+    setStartAtError('');
+    setDurationError('');
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Xử lý chọn/bỏ chọn câu hỏi
   const handleCheckboxChange = (qId, checked) => {
-    setSelectedQuestions(checked
-      ? [...selectedQuestions, qId]
-      : selectedQuestions.filter(id => id !== qId)
+    setSelectedQuestions(
+      checked
+        ? [...selectedQuestions, qId]
+        : selectedQuestions.filter(id => id !== qId)
     );
   };
 
-  // Xóa 1 tag câu hỏi
-  const handleRemoveTag = (id) => {
+  const handleRemoveTag = id => {
     setSelectedQuestions(selectedQuestions.filter(qid => qid !== id));
   };
 
-  // Submit form
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
-    if (!form.classId || selectedQuestions.length === 0) return;
+    setFormError('');
+    setStartAtError('');
+    setDurationError('');
 
-    // Đảm bảo questionIds là array id thật
+    if (!form.classId || selectedQuestions.length === 0) return;
+    if (!form.startAt || !form.endAt) return;
+
+    const now = new Date();
+    const start = new Date(form.startAt);
+    const end = new Date(form.endAt);
+
+    if (start.getTime() < now.getTime()) {
+      setStartAtError('Không được chọn thời gian trong quá khứ!');
+      return;
+    }
+    if (end <= start) {
+      setFormError('Thời gian kết thúc phải SAU thời gian bắt đầu!');
+      return;
+    }
+
+    const duration = Number(form.durationMinutes);
+    if (isNaN(duration) || duration <= 0) {
+      setDurationError('Thời lượng phải là số nguyên lớn hơn 0!');
+      return;
+    }
+
     onCreate({
       ...form,
       classId: Number(form.classId),
-      durationMinutes: Number(form.durationMinutes),
-      questionIds: selectedQuestions, // [1,2,3,...] id thật của câu hỏi
+      durationMinutes: duration,
+      questionIds: selectedQuestions,
     });
     setForm({ name: '', startAt: '', endAt: '', durationMinutes: '', classId: '' });
     setSelectedQuestions([]);
     setSearchText('');
     setDifficultyFilter('');
+    setFormError('');
+    setStartAtError('');
+    setDurationError('');
   };
 
   if (!show) return null;
@@ -87,7 +135,7 @@ export default function CreateExerciseModal({
     <div className="modal-overlay">
       <div className="modal-content">
         <h3>📝 Giao bài tập mới</h3>
-        <form onSubmit={handleSubmit} className="exercise-form">
+        <form onSubmit={handleSubmit} className="exercise-form" noValidate>
           {/* Tên bài tập */}
           <div className="exercise-title-group">
             <label htmlFor="exercise-title" className="exercise-title-label">
@@ -117,17 +165,53 @@ export default function CreateExerciseModal({
             </label>
             <label>
               Bắt đầu:
-              <input type="datetime-local" name="startAt" value={form.startAt} onChange={handleInputChange} required />
+              <input
+                type="datetime-local"
+                name="startAt"
+                value={form.startAt}
+                min={nowString}
+                onChange={handleInputChange}
+                required
+              />
+              {startAtError && (
+                <div style={{ color: 'red', fontSize: 14, marginTop: 2 }}>
+                  {startAtError}
+                </div>
+              )}
             </label>
             <label>
               Kết thúc:
-              <input type="datetime-local" name="endAt" value={form.endAt} onChange={handleInputChange} required />
+              <input
+                type="datetime-local"
+                name="endAt"
+                value={form.endAt}
+                min={form.startAt ? form.startAt : nowString}
+                onChange={handleInputChange}
+                required
+              />
             </label>
             <label>
               Thời lượng (phút):
-              <input type="number" name="durationMinutes" value={form.durationMinutes} onChange={handleInputChange} required />
+              <input
+                type="number"
+                name="durationMinutes"
+                value={form.durationMinutes}
+                onChange={handleInputChange}
+                required
+                min={1}
+                step={1}
+              />
+              {durationError && (
+                <div style={{ color: 'red', fontSize: 14, marginTop: 2 }}>
+                  {durationError}
+                </div>
+              )}
             </label>
           </div>
+          {/* Hiển thị lỗi form */}
+          {formError && (
+            <div style={{ color: 'red', marginBottom: 10 }}>{formError}</div>
+          )}
           {/* Danh sách chọn câu hỏi */}
           <div className="question-list">
             <span>Chọn các câu hỏi:</span>
