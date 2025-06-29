@@ -225,7 +225,7 @@ const StudentExerciseDetailPage = () => {
                 <div className="question-header">
                   <span className="question-number">Câu {index + 1}</span>
                   <span className={`question-result ${item.selectedAnswer === item.correctAnswer ? 'correct' : 'incorrect'}`}>
-                    {item.selectedAnswer === item.correctAnswer ? 'Đúng' : 'Sai'}
+                    {item.selectedAnswer === undefined ? 'Chưa trả lời' : item.selectedAnswer === item.correctAnswer ? 'Đúng' : 'Sai'}
                   </span>
                 </div>
 
@@ -237,7 +237,9 @@ const StudentExerciseDetailPage = () => {
                       <div 
                         key={answer.id}
                         className={`option-item ${
-                          item.selectedAnswer === answer.id
+                          item.selectedAnswer === undefined
+                            ? 'answer-default'
+                            : item.selectedAnswer === answer.id
                             ? item.selectedAnswer === item.correctAnswer
                               ? 'answer-correct-selected'
                               : 'answer-wrong-selected'
