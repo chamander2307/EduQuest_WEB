@@ -1,0 +1,322 @@
+/* moved from Classes/ExercisePage.css */
+.exercise-page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.exercise-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.exercise-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2563eb;
+  margin: 0;
+}
+.exercise-header select {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  padding: 0.4rem 1rem;
+  background: #f9fafb;
+  margin-right: 12px;
+}
+
+.create-btn {
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  margin-left: 0.5rem;
+}
+.create-btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  overflow: hidden;
+  margin-top: 1rem;
+}
+.exercise-table th, .exercise-table td {
+  padding: 1rem;
+  text-align: left;
+}
+.exercise-table th {
+  background: #f3f4f6;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+.exercise-table tbody tr {
+  transition: background 0.2s;
+}
+.exercise-table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.status {
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.98rem;
+  display: inline-block;
+}
+.status.chua {
+  background: #fef9c3;
+  color: #b45309;
+}
+.status.dang {
+  background: #dbeafe;
+  color: #2563eb;
+}
+.status.ketthuc {
+  background: #fca5a5;
+  color: #991b1b;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem 2.5rem;
+  min-width: 340px;
+  max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.exercise-form label {
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+.exercise-form input[type="text"],
+.exercise-form input[type="number"],
+.exercise-form input[type="datetime-local"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.exercise-form input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+  outline: none;
+}
+.question-list {
+  margin-bottom: 1rem;
+}
+.question-item {
+  display: inline-block;
+  margin-right: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 400;
+}
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+.save-btn {
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.save-btn:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+}
+.cancel-btn {
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.cancel-btn:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.tab-btn-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-right: 2rem;
+}
+.tab-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border-bottom: 2px solid transparent;
+}
+.tab-btn.active {
+  background: #fff;
+  color: #2563eb;
+  border-bottom: 2px solid #2563eb;
+  z-index: 2;
+}
+
+.exercise-detail-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 1000;
+  display: flex;
+  align-items: center;   
+  justify-content: center; 
+}
+
+.exercise-detail-modal-content {
+  background: #fff;
+  border-radius: 18px;
+  border: none !important;
+  outline: none !important;
+  width: 94vw;
+  max-width: 1440px;
+  max-height: 95vh;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  padding: 0;
+  position: relative;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .exercise-page-container {
+    padding: 1rem 0.25rem;
+  }
+  .exercise-header h2 {
+    font-size: 1.1rem;
+  }
+  .modal-content {
+    padding: 1rem 0.5rem;
+    min-width: 90vw;
+  }
+  .exercise-table th, .exercise-table td {
+    padding: 0.75rem;
+    font-size: 0.92rem;
+  }
+  .tab-btn-group {
+    margin-right: 0;
+    gap: 0.25rem;
+  }
+  .tab-btn {
+    font-size: 0.95rem;
+    padding: 0.4rem 0.7rem;
+  }
+}
+
+.discuss-btn {
+  background: linear-gradient(90deg, #2563eb 60%, #3b82f6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.32rem 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-left: 2px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.16s, transform 0.14s;
+}
+.discuss-btn:hover {
+  background: linear-gradient(90deg, #2563eb 80%, #38bdf8 100%);
+  transform: translateY(-2px) scale(1.04);
+  color: #fff;
+}
+
+.exercise-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  min-width: 172px; /* để 2 nút không bị dính quá */
+}
+
+/* style đồng bộ cho tất cả action-btn */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.34rem 0.9rem;
+  font-size: 0.99rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.15s;
+  box-shadow: 0 1.5px 5px rgba(59,130,246,0.06);
+  outline: none;
+}
+.action-btn:hover {
+  background: #1d4ed8;
+  color: #fff;
+  transform: translateY(-1.5px) scale(1.035);
+}
+.detail-btn {
+  background: linear-gradient(90deg, #38bdf8 65%, #2563eb 100%);
+}
+.detail-btn:hover {
+  background: linear-gradient(90deg, #2563eb 85%, #38bdf8 100%);
+}
+
+.discuss-btn {
+  background: linear-gradient(90deg, #2563eb 60%, #3b82f6 100%);
+  font-weight: 600;
+  padding-left: 0.7rem;
+  padding-right: 0.9rem;
+}
+.discuss-btn:hover {
+  background: linear-gradient(90deg, #2563eb 80%, #38bdf8 100%);
+  color: #fff;
+}
+
