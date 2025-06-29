@@ -55,9 +55,6 @@ const Header = () => {
             <Link to="/classes" className="nav-item">
               Lớp học
             </Link>
-            <Link to="/students" className="nav-item">
-              Sinh viên
-            </Link>
             <Link to="/exercise-results" className="nav-item">
               Kết quả bài tập
             </Link>
