@@ -1,5 +1,5 @@
 import axios from "../config/axios";
-import { mockStudentExerciseDetail } from "../pages/Exercise/data/mockData";
+
 
 // Lấy danh sách bài tập của instructor theo lớp
 export const getClassExercises = async (classId) => {
@@ -23,25 +23,19 @@ export const getExerciseResults = async (exerciseId) => {
   }
 };
 
-// Lấy chi tiết bài làm của sinh viên (sử dụng mock data)
-export const getStudentExerciseDetail = async (participationId) => {
+// Lấy chi tiết bài làm của sinh viên (chỉ gọi API thật, không dùng mock)
+export const getStudentExerciseDetail = async (participationId, token) => {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Clone mock data và update participationId
-    const responseData = {
-      ...mockStudentExerciseDetail,
-      data: {
-        ...mockStudentExerciseDetail.data,
-        participationId: parseInt(participationId)
-      }
-    };
-    
-    console.log('Using mock data for participationId:', participationId);
-    return responseData;
+    const response = await axios.get(`/participations/${participationId}/student-detail`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return { data: response.data.data };
   } catch (error) {
-    console.error('Error with mock data:', error);
-    throw new Error('Không thể tải chi tiết bài làm (mock data)');
+    if (error.response) {
+      throw new Error(error.response.data.message || `Lỗi ${error.response.status}`);
+    }
+    throw new Error('Không thể kết nối đến server.');
   }
 };

@@ -214,6 +214,23 @@ const ExerciseResultsPage = () => {
     }
   };
 
+  // Updated duration display to show in mm:ss format
+  const formatDurationInSeconds = (durationInSeconds) => {
+    const minutes = Math.floor(durationInSeconds / 60);
+    const seconds = durationInSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Added helper function to format duration from "45 minutes" string
+  const formatDurationFromMinutes = (durationString) => {
+    const minutesMatch = durationString.match(/(\d+) minutes/);
+    if (minutesMatch) {
+      const minutes = parseInt(minutesMatch[1], 10);
+      return `${minutes.toString().padStart(2, '0')}:00`;
+    }
+    return durationString; // Fallback if format is unexpected
+  };
+
   if (userLoading) {
     return (
       <div className="exercise-results-page">
@@ -387,9 +404,6 @@ const ExerciseResultsPage = () => {
                       <tr key={result.participationId}>
                         <td>
                           <div className="student-info">
-                            <div className="student-avatar">
-                              {getStudentInitials(result.studentName)}
-                            </div>
                             <div className="student-details">
                               <h4>{result.studentName}</h4>
                               <p>{result.studentCode}</p>
@@ -419,7 +433,11 @@ const ExerciseResultsPage = () => {
                         <td>{formatDateTime(result.submittedAt)}</td>
                         <td>
                           <span className="duration-display">
-                            {result.duration || formatDuration(result.startedAt, result.submittedAt)}
+                            {result.duration ?
+                              (typeof result.duration === 'string' && result.duration.includes('minutes')
+                                ? formatDurationFromMinutes(result.duration)
+                                : formatDurationInSeconds(result.duration))
+                              : formatDuration(result.startedAt, result.submittedAt)}
                           </span>
                         </td>
                         <td>
