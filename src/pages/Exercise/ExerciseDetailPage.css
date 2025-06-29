@@ -13,6 +13,25 @@
   overflow: hidden;
 }
 
+.close-btn {
+  font-size: 2.0rem;         
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 12px;         
+  margin-left: 16px;         
+  line-height: 1;
+  border-radius: 50%;
+  transition: background 0.13s, color 0.13s, box-shadow 0.13s;
+  box-shadow: 0 2px 12px rgba(36, 46, 66, 0.09);
+}
+.close-btn:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+
 
 .diagram-detail-header h2 {
   font-size: 1.25rem;

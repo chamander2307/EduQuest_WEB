@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import './CreateExerciseModal.css';
 
 const DIFFICULTY_LABELS = {
-  easy: 'Dễ',
-  medium: 'Trung bình',
-  hard: 'Khó',
+  EASY: 'Dễ',
+  MEDIUM: 'Trung bình',
+  HARD: 'Khó',
 };
 
 export default function CreateExerciseModal({
@@ -25,26 +25,56 @@ export default function CreateExerciseModal({
   const [searchText, setSearchText] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('');
 
+  // Chuẩn hóa questions chỉ lấy những câu có id thực, đồng bộ difficulty viết hoa
+  const normalizedQuestions = useMemo(() =>
+    (questions || [])
+      .filter(q => q.id !== undefined && q.id !== null)
+      .map(q => ({
+        ...q,
+        difficulty: (q.difficulty ?? 'EASY').toUpperCase(),
+      })),
+    [questions]
+  );
+
+  // Lọc câu hỏi theo tìm kiếm và mức độ
+  const filteredQuestions = useMemo(() =>
+    normalizedQuestions.filter(q =>
+      q.content.toLowerCase().includes(searchText.toLowerCase()) &&
+      (difficultyFilter ? q.difficulty === difficultyFilter : true)
+    ),
+    [normalizedQuestions, searchText, difficultyFilter]
+  );
+
+  // Xử lý form
   const handleInputChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Xử lý chọn/bỏ chọn câu hỏi
   const handleCheckboxChange = (qId, checked) => {
-    if (checked) {
-      setSelectedQuestions([...selectedQuestions, qId]);
-    } else {
-      setSelectedQuestions(selectedQuestions.filter(id => id !== qId));
-    }
+    setSelectedQuestions(checked
+      ? [...selectedQuestions, qId]
+      : selectedQuestions.filter(id => id !== qId)
+    );
   };
 
+  // Xóa 1 tag câu hỏi
   const handleRemoveTag = (id) => {
     setSelectedQuestions(selectedQuestions.filter(qid => qid !== id));
   };
 
+  // Submit form
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.classId) return;
-    onCreate({ ...form, questions: selectedQuestions });
+    if (!form.classId || selectedQuestions.length === 0) return;
+
+    // Đảm bảo questionIds là array id thật
+    onCreate({
+      ...form,
+      classId: Number(form.classId),
+      durationMinutes: Number(form.durationMinutes),
+      questionIds: selectedQuestions, // [1,2,3,...] id thật của câu hỏi
+    });
     setForm({ name: '', startAt: '', endAt: '', durationMinutes: '', classId: '' });
     setSelectedQuestions([]);
     setSearchText('');
@@ -53,18 +83,12 @@ export default function CreateExerciseModal({
 
   if (!show) return null;
 
-  const filteredQuestions = questions.filter(q => {
-    const textMatch = q.content.toLowerCase().includes(searchText.toLowerCase());
-    const difficultyMatch = difficultyFilter ? q.difficulty === difficultyFilter : true;
-    return textMatch && difficultyMatch;
-  });
-
   return (
     <div className="modal-overlay">
       <div className="modal-content">
         <h3>📝 Giao bài tập mới</h3>
         <form onSubmit={handleSubmit} className="exercise-form">
-          {/* Tên bài tập: search bar full width, riêng dòng */}
+          {/* Tên bài tập */}
           <div className="exercise-title-group">
             <label htmlFor="exercise-title" className="exercise-title-label">
               Tên bài tập:
@@ -80,7 +104,6 @@ export default function CreateExerciseModal({
               className="question-search-input exercise-title-input"
             />
           </div>
-
           {/* 2 hàng 2 cột: lớp - bắt đầu - kết thúc - thời lượng */}
           <div className="exercise-form-fields">
             <label>
@@ -105,7 +128,7 @@ export default function CreateExerciseModal({
               <input type="number" name="durationMinutes" value={form.durationMinutes} onChange={handleInputChange} required />
             </label>
           </div>
-
+          {/* Danh sách chọn câu hỏi */}
           <div className="question-list">
             <span>Chọn các câu hỏi:</span>
             <div className="question-search-filter">
@@ -122,17 +145,20 @@ export default function CreateExerciseModal({
                 onChange={e => setDifficultyFilter(e.target.value)}
               >
                 <option value="">Tất cả độ khó</option>
-                <option value="easy">Dễ</option>
-                <option value="medium">Trung bình</option>
-                <option value="hard">Khó</option>
+                <option value="EASY">Dễ</option>
+                <option value="MEDIUM">Trung bình</option>
+                <option value="HARD">Khó</option>
               </select>
             </div>
             <div className="question-grid-list">
               {filteredQuestions.length === 0 && (
-                <div style={{color:'#6b7280', fontStyle:'italic'}}>Không có câu hỏi phù hợp.</div>
+                <div style={{ color: '#6b7280', fontStyle: 'italic' }}>Không có câu hỏi phù hợp.</div>
               )}
               {filteredQuestions.map(q => (
-                <label className={`question-card ${selectedQuestions.includes(q.id) ? "selected" : ""}`} key={q.id}>
+                <label
+                  className={`question-card ${selectedQuestions.includes(q.id) ? "selected" : ""}`}
+                  key={q.id}
+                >
                   <input
                     type="checkbox"
                     checked={selectedQuestions.includes(q.id)}
@@ -140,25 +166,26 @@ export default function CreateExerciseModal({
                   />
                   <div className="card-content">
                     <div className="card-question">{q.content}</div>
-                    <span className={`question-difficulty-tag diff-${q.difficulty || 'easy'}`}>
-                      {DIFFICULTY_LABELS[q.difficulty] || ''}
+                    <span className={`question-difficulty-tag diff-${q.difficulty}`}>
+                      {DIFFICULTY_LABELS[q.difficulty]}
                     </span>
                   </div>
                 </label>
               ))}
             </div>
+            {/* Tag các câu hỏi đã chọn */}
             <div className="selected-tags-container">
               {selectedQuestions.map(qId => {
-                const q = questions.find(item => item.id === qId);
+                const q = normalizedQuestions.find(item => item.id === qId);
                 if (!q) return null;
                 return (
-                  <span className="selected-tag" key={q.id}>
+                  <span className="selected-tag" key={qId}>
                     {q.content}
                     <button
                       type="button"
                       className="remove-tag-btn"
                       title="Bỏ chọn"
-                      onClick={() => handleRemoveTag(q.id)}
+                      onClick={() => handleRemoveTag(qId)}
                     >
                       ×
                     </button>

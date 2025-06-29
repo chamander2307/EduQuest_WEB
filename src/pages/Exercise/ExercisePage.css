@@ -225,9 +225,6 @@
   flex-direction: column;
 }
 
-
-
-
 @media (max-width: 768px) {
   .exercise-page-container {
     padding: 1rem 0.25rem;
@@ -252,3 +249,74 @@
     padding: 0.4rem 0.7rem;
   }
 }
+
+.discuss-btn {
+  background: linear-gradient(90deg, #2563eb 60%, #3b82f6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.32rem 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-left: 2px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.16s, transform 0.14s;
+}
+.discuss-btn:hover {
+  background: linear-gradient(90deg, #2563eb 80%, #38bdf8 100%);
+  transform: translateY(-2px) scale(1.04);
+  color: #fff;
+}
+
+.exercise-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  min-width: 172px; /* để 2 nút không bị dính quá */
+}
+
+/* style đồng bộ cho tất cả action-btn */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.34rem 0.9rem;
+  font-size: 0.99rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.15s;
+  box-shadow: 0 1.5px 5px rgba(59,130,246,0.06);
+  outline: none;
+}
+.action-btn:hover {
+  background: #1d4ed8;
+  color: #fff;
+  transform: translateY(-1.5px) scale(1.035);
+}
+.detail-btn {
+  background: linear-gradient(90deg, #38bdf8 65%, #2563eb 100%);
+}
+.detail-btn:hover {
+  background: linear-gradient(90deg, #2563eb 85%, #38bdf8 100%);
+}
+
+.discuss-btn {
+  background: linear-gradient(90deg, #2563eb 60%, #3b82f6 100%);
+  font-weight: 600;
+  padding-left: 0.7rem;
+  padding-right: 0.9rem;
+}
+.discuss-btn:hover {
+  background: linear-gradient(90deg, #2563eb 80%, #38bdf8 100%);
+  color: #fff;
+}
+

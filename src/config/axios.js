@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Tạo instance Axios với cấu hình cơ bản
 const instance = axios.create({
   baseURL: "http://localhost:8080/api",
   withCredentials: true,
