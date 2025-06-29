@@ -18,7 +18,6 @@ export default function DiscussionCommentPage() {
   const stompRef = useRef(null);
   const userId = getUserIdFromToken();
 
-  // Nếu thiếu discussion, tự fetch lại theo id
   useEffect(() => {
     if (!discussion && exerciseId) {
       getDiscussionsByExercise(exerciseId).then(ds => {
@@ -26,11 +25,9 @@ export default function DiscussionCommentPage() {
         if (d) setDiscussion(d);
       });
     }
-    // eslint-disable-next-line
   }, [exerciseId, discussionId, discussion]);
 
-  // Load comment & connect WebSocket
-   useEffect(() => {
+  useEffect(() => {
     if (!discussionId) return;
     getCommentsByDiscussion(discussionId).then(apiComments => {
       setComments(
@@ -80,7 +77,6 @@ export default function DiscussionCommentPage() {
     };
   }, [discussionId, userId]);
 
-  // Gửi bình luận
   const handleSend = () => {
     if (!input.trim() || !stompRef.current) return;
     stompRef.current.publish({
@@ -90,7 +86,6 @@ export default function DiscussionCommentPage() {
     setInput("");
   };
 
-  // Like bình luận
   const handleLike = (commentId) => {
     if (!stompRef.current) return;
     stompRef.current.publish({

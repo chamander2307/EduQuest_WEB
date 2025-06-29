@@ -5,7 +5,6 @@ import './ExerciseDetailPage.css';
 export default function ExerciseDetailPage({ exercise, onClose }) {
     if (!exercise) return null;
 
-    // Đảm bảo không lỗi khi questions bị undefined/null
     const questions = Array.isArray(exercise.questions) ? exercise.questions : [];
 
     return (
@@ -25,7 +24,7 @@ export default function ExerciseDetailPage({ exercise, onClose }) {
                     <b>Thời gian:</b> {(exercise.startAt ?? '').replace('T', ' ')} - {(exercise.endAt ?? '').replace('T', ' ')}
                 </div>
                 <div className="diagram-meta-box">
-                    <b>Đã làm:</b> {exercise.submittedStudentCount ?? exercise.studentCount ?? 0} sinh viên
+                    <b>Đã làm:</b> {exercise.submittedStudentCount ?? exercise.studentCount ?? 0} Sinh viên
                 </div>
             </div>
             <div className="diagram-questions-wrapper">
