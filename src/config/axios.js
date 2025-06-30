@@ -10,7 +10,6 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  console.log(`Processing queue: ${failedQueue.length} requests`);
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -30,7 +29,6 @@ const isTokenExpired = (token) => {
     const payload = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Math.floor(Date.now() / 1000);
     const isExpired = payload.exp < currentTime;
-    console.log(`Token expiry check: ${isExpired ? "Expired" : "Valid"}`);
     return isExpired;
   } catch (e) {
     console.error("Error decoding token:", e.message);
@@ -50,7 +48,6 @@ instance.interceptors.request.use(async (config) => {
   // Nếu không có accessToken nhưng có refreshToken, thử làm mới
   if (!token && refreshTokenValue) {
     if (isRefreshing) {
-      console.log(`Queueing request while refreshing: ${config.url}`);
       return new Promise((resolve, reject) => {
         failedQueue.push({
           resolve: (newToken) => {
@@ -70,7 +67,6 @@ instance.interceptors.request.use(async (config) => {
         throw new Error("No new access token received");
       }
       localStorage.setItem("accessToken", newToken);
-      console.log("Token refreshed successfully");
       processQueue(null, newToken);
       config.headers["Authorization"] = `Bearer ${newToken}`;
       return config;
@@ -80,7 +76,6 @@ instance.interceptors.request.use(async (config) => {
       throw error;
     } finally {
       isRefreshing = false;
-      console.log("Token refresh completed, isRefreshing:", isRefreshing);
     }
   }
 
@@ -91,7 +86,6 @@ instance.interceptors.request.use(async (config) => {
 
   if (token && isTokenExpired(token) && refreshTokenValue) {
     if (isRefreshing) {
-      console.log(`Queueing request while refreshing: ${config.url}`);
       return new Promise((resolve, reject) => {
         failedQueue.push({
           resolve: (newToken) => {
