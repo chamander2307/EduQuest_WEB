@@ -7,6 +7,7 @@ import {
 } from "../services/AuthServices";
 import { useNavigate } from "react-router-dom";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
@@ -109,6 +110,7 @@ export const UserProvider = ({ children }) => {
   const logout = async () => {
     try {
       await performLogout();
+    // eslint-disable-next-line no-unused-vars
     } catch (e) {
       console.warn("Logout API failed, nhưng sẽ xóa local");
     } finally {
