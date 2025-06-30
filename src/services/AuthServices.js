@@ -7,13 +7,14 @@ export const refreshToken = async () => {
   try {
     const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) {
+      localStorage.removeItem("accessToken");
+      window.location.href = "/login";
       throw new Error("Không tìm thấy refresh token trong localStorage");
     }
 
     const response = await instance.post("/auth/refresh-token", {
       refreshToken,
     });
-    console.log("Refresh Token:", localStorage.getItem("refreshToken"));
     const data = response.data;
     if (data?.data?.accessToken) {
       localStorage.setItem("accessToken", data.data.accessToken);
@@ -22,14 +23,17 @@ export const refreshToken = async () => {
     }
     throw new Error(
       getVietnameseMessage(data.code, "Làm mới token") ||
-      "Làm mới token không thành công"
+        "Làm mới token không thành công"
     );
   } catch (error) {
     const code = error.response?.data?.code;
     console.error("Lỗi làm mới token:", error.message, "| Mã lỗi:", code);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    window.location.href = "/login";
     throw new Error(
       getVietnameseMessage(code, "Làm mới token") ||
-      "Làm mới token không thành công"
+        "Làm mới token không thành công"
     );
   }
 };
@@ -82,7 +86,7 @@ export const login = async (username, password) => {
     }
     throw new Error(
       getVietnameseMessage(data.code, "Đăng nhập") ||
-      "Đăng nhập không thành công"
+        "Đăng nhập không thành công"
     );
   } catch (error) {
     const code = error.response?.data?.code;
@@ -114,13 +118,13 @@ export const forgotPassword = async (email) => {
     }
     throw new Error(
       getVietnameseMessage(data.code, "Đặt lại mật khẩu") ||
-      "Yêu cầu đặt lại mật khẩu không thành công"
+        "Yêu cầu đặt lại mật khẩu không thành công"
     );
   } catch (error) {
     const code = error.response?.data?.code;
     throw new Error(
       getVietnameseMessage(code, "Đặt lại mật khẩu") ||
-      "Yêu cầu đặt lại mật khẩu không thành công"
+        "Yêu cầu đặt lại mật khẩu không thành công"
     );
   }
 };
@@ -138,13 +142,13 @@ export const verifyOtpForgotPassword = async (otp) => {
     }
     throw new Error(
       getVietnameseMessage(data.code, "Xác thực OTP") ||
-      "Xác thực OTP không thành công"
+        "Xác thực OTP không thành công"
     );
   } catch (error) {
     const code = error.response?.data?.code;
     throw new Error(
       getVietnameseMessage(code, "Xác thực OTP") ||
-      "Xác thực OTP không thành công"
+        "Xác thực OTP không thành công"
     );
   }
 };
@@ -160,13 +164,13 @@ export const resetPassword = async (newPassword) => {
     }
     throw new Error(
       getVietnameseMessage(data.code, "Đặt lại mật khẩu") ||
-      "Đặt lại mật khẩu không thành công"
+        "Đặt lại mật khẩu không thành công"
     );
   } catch (error) {
     const code = error.response?.data?.code;
     throw new Error(
       getVietnameseMessage(code, "Đặt lại mật khẩu") ||
-      "Đặt lại mật khẩu không thành công"
+        "Đặt lại mật khẩu không thành công"
     );
   }
 };
@@ -180,13 +184,13 @@ export const verifyRegisterOtp = async (username, otp) => {
     }
     throw new Error(
       getVietnameseMessage(data.code, "Xác thực OTP") ||
-      "Xác thực OTP không thành công"
+        "Xác thực OTP không thành công"
     );
   } catch (error) {
     const code = error.response?.data?.code;
     throw new Error(
       getVietnameseMessage(code, "Xác thực OTP") ||
-      "Xác thực OTP không thành công"
+        "Xác thực OTP không thành công"
     );
   }
 };
@@ -200,13 +204,13 @@ export const resendOtp = async (username) => {
     }
     throw new Error(
       getVietnameseMessage(data.code, "Gửi lại OTP") ||
-      "Gửi lại OTP không thành công"
+        "Gửi lại OTP không thành công"
     );
   } catch (error) {
     const code = error.response?.data?.code;
     throw new Error(
       getVietnameseMessage(code, "Gửi lại OTP") ||
-      "Gửi lại OTP không thành công"
+        "Gửi lại OTP không thành công"
     );
   }
 };
