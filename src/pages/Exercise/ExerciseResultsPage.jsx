@@ -92,10 +92,8 @@ const ExerciseResultsPage = () => {
       return;
     }
     try {
-      await exportStudentScoresToExcel(selectedClassId, selectedExercise.exerciseId);
-      toast.success("Xuất file Excel thành công!", {
-        toastId: "success-export-excel",
-      });
+      await exportStudentScoresToExcel(selectedClassId, selectedExercise.exerciseId, selectedExercise.exerciseName);
+      toast.success("Xuất file Excel thành công!");
     } catch (error) {
       const errorMessage = error.response?.data?.code
         ? getVietnameseMessage(error.response.data.code)
