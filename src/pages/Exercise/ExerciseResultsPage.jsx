@@ -72,7 +72,7 @@ const ExerciseResultsPage = () => {
       return;
     }
     try {
-      await exportStudentScoresToExcel(selectedClassId, selectedExercise.exerciseId);
+      await exportStudentScoresToExcel(selectedClassId, selectedExercise.exerciseId, selectedExercise.exerciseName);
       toast.success("Xuất file Excel thành công!");
     } catch (error) {
       toast.error(error.message || "Xuất file Excel thất bại!");
