@@ -70,18 +70,19 @@ const ClassManagementPage = () => {
 
     try {
       setLoading(true);
-      const response = await createClass({ className });
-      const newClass = {
-        id: response.id,
-        className: response.name,
-        classCode: response.classCode,
-        createdAt: new Date().toLocaleDateString("vi-VN"),
-        numberOfStudents: 0,
-      };
-      setClasses([...classes, newClass]);
+      await createClass({ className });
       setClassName("");
       setShowModal(false);
       toast.success("Tạo lớp học thành công!");
+      const response = await getInstructorClasses();
+      const mappedClasses = response.data.map((cls) => ({
+        id: cls.classId,
+        className: cls.className,
+        classCode: cls.classCode,
+        createdAt: new Date(cls.createdAt).toLocaleDateString("vi-VN"),
+        numberOfStudents: cls.numberOfStudents,
+      }));
+      setClasses(mappedClasses);
     } catch (err) {
       console.log("Error handled in handleCreateClass:", err.message);
       const errorMessage = err.response?.data?.code
