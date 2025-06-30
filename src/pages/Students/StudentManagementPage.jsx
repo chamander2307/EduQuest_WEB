@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import "./StudentManagementPage.css";
 import { getInstructorClasses, getClassStudents } from "../../services/ClassServices";
 import { updateEnrollmentStatus } from "../../services/EnrollmentServices";
+import { getVietnameseMessage } from "../../constants/VietNameseStatus";
 
 const StudentManagementPage = () => {
   const [searchParams] = useSearchParams();
@@ -21,6 +22,17 @@ const StudentManagementPage = () => {
   });
   const [error, setError] = useState(null);
   const [avatarErrors, setAvatarErrors] = useState({});
+
+  // Error handling refs
+  const errorHandledRef = useRef({
+    classes: false,
+    students: false,
+    approve: {},
+    reject: {},
+    delete: {},
+    bulkApprove: false,
+    bulkReject: false
+  });
 
   // Helper functions để validate avatar URL
   const isValidAvatarUrl = (url) => {
@@ -77,8 +89,19 @@ const StudentManagementPage = () => {
       if (currentClass) {
         setCurrentClass(currentClass);
       }
+      errorHandledRef.current.classes = false; // Reset khi thành công
     } catch (error) {
-      console.error('Error loading current class:', error);
+      if (!errorHandledRef.current.classes) {
+        console.log("Error handled in loadCurrentClass:", error.message);
+        const errorMessage = error.response?.data?.code
+          ? getVietnameseMessage(error.response.data.code)
+          : error.message || 'Không thể tải thông tin lớp học';
+        
+        toast.error(errorMessage, {
+          toastId: `error-current-class-${error.response?.data?.code || error.message}`,
+        });
+        errorHandledRef.current.classes = true;
+      }
     }
   };
 
@@ -97,12 +120,24 @@ const StudentManagementPage = () => {
       const transformedData = transformApiData(response.data || []);
       
       setStudents(transformedData);
-      toast.success(`Đã tải thành công ${transformedData.length} sinh viên`);
+      errorHandledRef.current.students = false; // Reset khi thành công
+      toast.success(`Đã tải thành công ${transformedData.length} sinh viên`, {
+        toastId: `success-students-${classId}`,
+      });
       
     } catch (error) {
-      console.error('Error loading students:', error);
-      setError(error.message);
-      toast.error("Không thể tải danh sách sinh viên");
+      if (!errorHandledRef.current.students) {
+        console.log("Error handled in loadStudents:", error.message);
+        const errorMessage = error.response?.data?.code
+          ? getVietnameseMessage(error.response.data.code)
+          : error.message || "Không thể tải danh sách sinh viên";
+        
+        setError(errorMessage);
+        toast.error(errorMessage, {
+          toastId: `error-students-${error.response?.data?.code || error.message}`,
+        });
+        errorHandledRef.current.students = true;
+      }
     } finally {
       setLoading(false);
     }
@@ -110,6 +145,16 @@ const StudentManagementPage = () => {
 
   useEffect(() => {
     if (classId) {
+      // Reset tất cả error flags khi đổi lớp
+      errorHandledRef.current = { 
+        classes: false, 
+        students: false,
+        approve: {},
+        reject: {},
+        delete: {},
+        bulkApprove: false,
+        bulkReject: false
+      };
       loadCurrentClass();
       loadStudents();
     }
@@ -163,12 +208,16 @@ const StudentManagementPage = () => {
       const student = students.find(s => s.id === studentId);
       
       if (!student?.enrollmentId) {
-        toast.error("Không tìm thấy thông tin đăng ký");
+        toast.error("Không tìm thấy thông tin đăng ký", {
+          toastId: "error-approve-missing-enrollment",
+        });
         return;
       }
 
       if (student.status !== "pending") {
-        toast.warning("Chỉ có thể duyệt sinh viên đang chờ duyệt!");
+        toast.warning("Chỉ có thể duyệt sinh viên đang chờ duyệt!", {
+          toastId: "warning-approve-status",
+        });
         return;
       }
 
@@ -186,10 +235,24 @@ const StudentManagementPage = () => {
           : s
       ));
       
-      toast.success(`Đã duyệt sinh viên ${student.name} thành công vào lớp!`);
+      toast.success(`Đã duyệt sinh viên ${student.name} thành công vào lớp!`, {
+        toastId: `success-approve-${studentId}`,
+      });
+      
+      // Reset error flag on success
+      errorHandledRef.current.approve[studentId] = false;
     } catch (error) {
-      console.error('Error approving student:', error);
-      toast.error("Không thể duyệt sinh viên. Vui lòng thử lại!");
+      if (!errorHandledRef.current.approve[studentId]) {
+        console.error('Error approving student:', error);
+        const errorMessage = error.response?.data?.code
+          ? getVietnameseMessage(error.response.data.code)
+          : error.message || "Không thể duyệt sinh viên. Vui lòng thử lại!";
+        
+        toast.error(errorMessage, {
+          toastId: `error-approve-${error.response?.data?.code || error.message}-${studentId}`,
+        });
+        errorHandledRef.current.approve[studentId] = true;
+      }
     }
   };
 
@@ -198,12 +261,16 @@ const StudentManagementPage = () => {
       const student = students.find(s => s.id === studentId);
       
       if (!student?.enrollmentId) {
-        toast.error("Không tìm thấy thông tin đăng ký");
+        toast.error("Không tìm thấy thông tin đăng ký", {
+          toastId: "error-reject-missing-enrollment",
+        });
         return;
       }
 
       if (student.status !== "pending") {
-        toast.warning("Chỉ có thể từ chối sinh viên đang chờ duyệt!");
+        toast.warning("Chỉ có thể từ chối sinh viên đang chờ duyệt!", {
+          toastId: "warning-reject-status",
+        });
         return;
       }
 
@@ -221,29 +288,76 @@ const StudentManagementPage = () => {
           : s
       ));
       
-      toast.warning(`Đã từ chối sinh viên ${student.name}!`);
+      toast.warning(`Đã từ chối sinh viên ${student.name}!`, {
+        toastId: `success-reject-${studentId}`,
+      });
+      
+      // Reset error flag on success
+      errorHandledRef.current.reject[studentId] = false;
     } catch (error) {
-      console.error('Error rejecting student:', error);
-      toast.error("Không thể từ chối sinh viên. Vui lòng thử lại!");
+      if (!errorHandledRef.current.reject[studentId]) {
+        console.error('Error rejecting student:', error);
+        const errorMessage = error.response?.data?.code
+          ? getVietnameseMessage(error.response.data.code)
+          : error.message || "Không thể từ chối sinh viên. Vui lòng thử lại!";
+        
+        toast.error(errorMessage, {
+          toastId: `error-reject-${error.response?.data?.code || error.message}-${studentId}`,
+        });
+        errorHandledRef.current.reject[studentId] = true;
+      }
     }
   };
 
   const handleDeleteStudent = async (studentId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sinh viên này khỏi lớp?")) {
       try {
-        // Tạm thời chỉ xóa khỏi state local - có thể cần API riêng để xóa hoàn toàn
-        setStudents(students.filter(s => s.id !== studentId));
-        toast.success("Đã xóa sinh viên khỏi lớp!");
+        const student = students.find(s => s.id === studentId);
+        
+        if (!student?.enrollmentId) {
+          toast.error("Không tìm thấy thông tin đăng ký", {
+            toastId: "error-delete-missing-enrollment",
+          });
+          return;
+        }
+
+        // Gọi API để reject (set về trạng thái rejected thay vì xóa)
+        await updateEnrollmentStatus(student.enrollmentId, "REJECTED");
+        
+        // Cập nhật state local - set trạng thái về rejected
+        setStudents(students.map(s => 
+          s.id === studentId 
+            ? { ...s, status: "rejected" }
+            : s
+        ));
+        
+        toast.success(`Đã xóa sinh viên ${student.name} khỏi lớp!`, {
+          toastId: `success-delete-${studentId}`,
+        });
+        
+        // Reset error flag on success
+        errorHandledRef.current.delete[studentId] = false;
       } catch (error) {
-        console.error('Error deleting student:', error);
-        toast.error(error.message || "Không thể xóa sinh viên");
+        if (!errorHandledRef.current.delete[studentId]) {
+          console.error('Error deleting student:', error);
+          const errorMessage = error.response?.data?.code
+            ? getVietnameseMessage(error.response.data.code)
+            : error.message || "Không thể xóa sinh viên";
+          
+          toast.error(errorMessage, {
+            toastId: `error-delete-${error.response?.data?.code || error.message}-${studentId}`,
+          });
+          errorHandledRef.current.delete[studentId] = true;
+        }
       }
     }
   };
 
   const handleBulkApprove = async () => {
     if (selectedStudents.length === 0) {
-      toast.warning("Vui lòng chọn ít nhất một sinh viên!");
+      toast.warning("Vui lòng chọn ít nhất một sinh viên!", {
+        toastId: "warning-bulk-approve-empty",
+      });
       return;
     }
     
@@ -253,7 +367,9 @@ const StudentManagementPage = () => {
     );
     
     if (pendingStudents.length === 0) {
-      toast.warning("Không có sinh viên nào đang chờ duyệt trong danh sách đã chọn!");
+      toast.warning("Không có sinh viên nào đang chờ duyệt trong danh sách đã chọn!", {
+        toastId: "warning-bulk-approve-no-pending",
+      });
       return;
     }
     
@@ -294,21 +410,41 @@ const StudentManagementPage = () => {
       setSelectedStudents([]);
       
       if (successCount > 0 && errorCount === 0) {
-        toast.success(`Đã duyệt thành công ${successCount} sinh viên vào lớp!`);
+        toast.success(`Đã duyệt thành công ${successCount} sinh viên vào lớp!`, {
+          toastId: "success-bulk-approve-all",
+        });
       } else if (successCount > 0 && errorCount > 0) {
-        toast.warning(`Đã duyệt ${successCount} sinh viên, ${errorCount} sinh viên gặp lỗi!`);
+        toast.warning(`Đã duyệt ${successCount} sinh viên, ${errorCount} sinh viên gặp lỗi!`, {
+          toastId: "warning-bulk-approve-partial",
+        });
       } else {
-        toast.error("Không thể duyệt sinh viên nào. Vui lòng thử lại!");
+        toast.error("Không thể duyệt sinh viên nào. Vui lòng thử lại!", {
+          toastId: "error-bulk-approve-none",
+        });
       }
+      
+      // Reset error flag on success
+      errorHandledRef.current.bulkApprove = false;
     } catch (error) {
-      console.error('Error bulk approving:', error);
-      toast.error("Lỗi hệ thống khi duyệt hàng loạt. Vui lòng thử lại!");
+      if (!errorHandledRef.current.bulkApprove) {
+        console.error('Error bulk approving:', error);
+        const errorMessage = error.response?.data?.code
+          ? getVietnameseMessage(error.response.data.code)
+          : error.message || "Lỗi hệ thống khi duyệt hàng loạt. Vui lòng thử lại!";
+        
+        toast.error(errorMessage, {
+          toastId: `error-bulk-approve-${error.response?.data?.code || error.message}`,
+        });
+        errorHandledRef.current.bulkApprove = true;
+      }
     }
   };
 
   const handleBulkReject = async () => {
     if (selectedStudents.length === 0) {
-      toast.warning("Vui lòng chọn ít nhất một sinh viên!");
+      toast.warning("Vui lòng chọn ít nhất một sinh viên!", {
+        toastId: "warning-bulk-reject-empty",
+      });
       return;
     }
     
@@ -318,7 +454,9 @@ const StudentManagementPage = () => {
     );
     
     if (pendingStudents.length === 0) {
-      toast.warning("Không có sinh viên nào đang chờ duyệt trong danh sách đã chọn!");
+      toast.warning("Không có sinh viên nào đang chờ duyệt trong danh sách đã chọn!", {
+        toastId: "warning-bulk-reject-no-pending",
+      });
       return;
     }
     
@@ -359,36 +497,37 @@ const StudentManagementPage = () => {
       setSelectedStudents([]);
       
       if (successCount > 0 && errorCount === 0) {
-        toast.warning(`Đã từ chối ${successCount} sinh viên!`);
+        toast.warning(`Đã từ chối ${successCount} sinh viên!`, {
+          toastId: "success-bulk-reject-all",
+        });
       } else if (successCount > 0 && errorCount > 0) {
-        toast.warning(`Đã từ chối ${successCount} sinh viên, ${errorCount} sinh viên gặp lỗi!`);
+        toast.warning(`Đã từ chối ${successCount} sinh viên, ${errorCount} sinh viên gặp lỗi!`, {
+          toastId: "warning-bulk-reject-partial",
+        });
       } else {
-        toast.error("Không thể từ chối sinh viên nào. Vui lòng thử lại!");
+        toast.error("Không thể từ chối sinh viên nào. Vui lòng thử lại!", {
+          toastId: "error-bulk-reject-none",
+        });
       }
+      
+      // Reset error flag on success
+      errorHandledRef.current.bulkReject = false;
     } catch (error) {
-      console.error('Error bulk rejecting:', error);
-      toast.error("Lỗi hệ thống khi từ chối hàng loạt. Vui lòng thử lại!");
+      if (!errorHandledRef.current.bulkReject) {
+        console.error('Error bulk rejecting:', error);
+        const errorMessage = error.response?.data?.code
+          ? getVietnameseMessage(error.response.data.code)
+          : error.message || "Lỗi hệ thống khi từ chối hàng loạt. Vui lòng thử lại!";
+        
+        toast.error(errorMessage, {
+          toastId: `error-bulk-reject-${error.response?.data?.code || error.message}`,
+        });
+        errorHandledRef.current.bulkReject = true;
+      }
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedStudents.length === 0) {
-      toast.warning("Vui lòng chọn ít nhất một sinh viên!");
-      return;
-    }
-    
-    if (window.confirm(`Bạn có chắc chắn muốn xóa ${selectedStudents.length} sinh viên khỏi lớp?`)) {
-      try {
-        // Tạm thời chỉ xóa khỏi state local
-        setStudents(students.filter(s => !selectedStudents.includes(s.id)));
-        setSelectedStudents([]);
-        toast.success(`Đã xóa ${selectedStudents.length} sinh viên khỏi lớp!`);
-      } catch (error) {
-        console.error('Error bulk deleting:', error);
-        toast.error(error.message || "Không thể xóa hàng loạt");
-      }
-    }
-  };
+
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -577,12 +716,6 @@ const StudentManagementPage = () => {
                 className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
               >
                 Từ chối tất cả
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-              >
-                Xóa tất cả
               </button>
             </div>
           </div>

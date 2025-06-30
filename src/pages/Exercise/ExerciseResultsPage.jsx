@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { UserContext } from "../../contexts/InstructorContext";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import "./ExerciseResultsPage.css";
 import { getInstructorClasses } from "../../services/ClassServices";
 import { exportStudentScoresToExcel } from "../../services/ExportResult";
 import { getClassExercises, getExerciseResults } from "../../services/ExerciseServices";
+import { getVietnameseMessage } from "../../constants/VietNameseStatus";
 
 const ExerciseResultsPage = () => {
   const { isLogin, loading: userLoading } = useContext(UserContext);
@@ -24,6 +25,13 @@ const ExerciseResultsPage = () => {
     results: false
   });
   const [error, setError] = useState(null);
+  
+  // Error handling refs
+  const errorHandledRef = useRef({
+    classes: false,
+    exercises: false,
+    results: false
+  });
 
   // Authentication check
   useEffect(() => {
@@ -50,15 +58,25 @@ const ExerciseResultsPage = () => {
         }));
         
         setClasses(mappedClasses);
+        errorHandledRef.current.classes = false; // Reset khi thành công
         
         // Auto-select first class if available
         if (mappedClasses.length > 0) {
           setSelectedClassId(mappedClasses[0].id);
         }
       } catch (error) {
-        console.error('Error loading classes:', error);
-        setError('Không thể tải danh sách lớp học');
-        toast.error('Không thể tải danh sách lớp học');
+        if (!errorHandledRef.current.classes) {
+          console.log("Error handled in loadClasses:", error.message);
+          const errorMessage = error.response?.data?.code
+            ? getVietnameseMessage(error.response.data.code)
+            : error.message || 'Không thể tải danh sách lớp học';
+          
+          setError('Không thể tải danh sách lớp học');
+          toast.error(errorMessage, {
+            toastId: `error-classes-${error.response?.data?.code || error.message}`,
+          });
+          errorHandledRef.current.classes = true;
+        }
       } finally {
         setLoading(prev => ({ ...prev, classes: false }));
       }
@@ -68,14 +86,24 @@ const ExerciseResultsPage = () => {
   }, [isLogin]);
     const handleExportExcel = async () => {
     if (!selectedClassId || !selectedExercise) {
-      toast.error("Vui lòng chọn lớp và bài tập!");
+      toast.error("Vui lòng chọn lớp và bài tập!", {
+        toastId: "error-export-missing-selection",
+      });
       return;
     }
     try {
       await exportStudentScoresToExcel(selectedClassId, selectedExercise.exerciseId);
-      toast.success("Xuất file Excel thành công!");
+      toast.success("Xuất file Excel thành công!", {
+        toastId: "success-export-excel",
+      });
     } catch (error) {
-      toast.error(error.message || "Xuất file Excel thất bại!");
+      const errorMessage = error.response?.data?.code
+        ? getVietnameseMessage(error.response.data.code)
+        : error.message || "Xuất file Excel thất bại!";
+      
+      toast.error(errorMessage, {
+        toastId: `error-export-${error.response?.data?.code || error.message}`,
+      });
     }
   };
   // Load exercises when class is selected
@@ -85,6 +113,7 @@ const ExerciseResultsPage = () => {
         setExercises([]);
         setSelectedExercise(null);
         setExerciseResults(null);
+        errorHandledRef.current.exercises = false; // Reset khi không có class
         return;
       }
       
@@ -94,18 +123,30 @@ const ExerciseResultsPage = () => {
         
         const response = await getClassExercises(selectedClassId);
         setExercises(response.data || []);
+        errorHandledRef.current.exercises = false; // Reset khi thành công
         
         // Reset selected exercise and results
         setSelectedExercise(null);
         setExerciseResults(null);
         
         if (response.data && response.data.length > 0) {
-          toast.success(`Đã tải ${response.data.length} bài tập`);
+          toast.success(`Đã tải ${response.data.length} bài tập`, {
+            toastId: `success-exercises-${selectedClassId}`,
+          });
         }
       } catch (error) {
-        console.error('Error loading exercises:', error);
-        setError('Không thể tải danh sách bài tập');
-        toast.error('Không thể tải danh sách bài tập');
+        if (!errorHandledRef.current.exercises) {
+          console.log("Error handled in loadExercises:", error.message);
+          const errorMessage = error.response?.data?.code
+            ? getVietnameseMessage(error.response.data.code)
+            : error.message || 'Không thể tải danh sách bài tập';
+          
+          setError('Không thể tải danh sách bài tập');
+          toast.error(errorMessage, {
+            toastId: `error-exercises-${error.response?.data?.code || error.message}`,
+          });
+          errorHandledRef.current.exercises = true;
+        }
         setExercises([]);
       } finally {
         setLoading(prev => ({ ...prev, exercises: false }));
@@ -120,6 +161,7 @@ const ExerciseResultsPage = () => {
     try {
       setLoading(prev => ({ ...prev, results: true }));
       setError(null);
+      errorHandledRef.current.results = false; // Reset trước khi load
       
       const response = await getExerciseResults(exerciseId);
       setExerciseResults(response.data);
@@ -127,11 +169,22 @@ const ExerciseResultsPage = () => {
       const exercise = exercises.find(ex => ex.exerciseId === exerciseId);
       setSelectedExercise(exercise);
       
-      toast.success(`Đã tải kết quả bài tập "${exercise?.exerciseName}"`);
+      toast.success(`Đã tải kết quả bài tập "${exercise?.exerciseName}"`, {
+        toastId: `success-results-${exerciseId}`,
+      });
     } catch (error) {
-      console.error('Error loading exercise results:', error);
-      setError('Không thể tải kết quả bài tập');
-      toast.error('Không thể tải kết quả bài tập');
+      if (!errorHandledRef.current.results) {
+        console.log("Error handled in loadExerciseResults:", error.message);
+        const errorMessage = error.response?.data?.code
+          ? getVietnameseMessage(error.response.data.code)
+          : error.message || 'Không thể tải kết quả bài tập';
+        
+        setError('Không thể tải kết quả bài tập');
+        toast.error(errorMessage, {
+          toastId: `error-results-${error.response?.data?.code || error.message}`,
+        });
+        errorHandledRef.current.results = true;
+      }
       setExerciseResults(null);
     } finally {
       setLoading(prev => ({ ...prev, results: false }));
