@@ -1,5 +1,7 @@
 import axios from "axios";
+import { refreshToken } from "../services/AuthServices";
 
+// Tạo instance Axios với cấu hình cơ bản
 const instance = axios.create({
   baseURL: "http://localhost:8080/api",
   withCredentials: true,
@@ -20,27 +22,9 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Tách refresh token logic để tránh circular dependency
-const refreshTokenInternal = async () => {
-  try {
-    const response = await axios.post("http://localhost:8080/api/auth/refresh", {}, {
-      withCredentials: true
-    });
-    const data = response.data;
-    if (data?.data?.accessToken) {
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      return data.data;
-    }
-    throw new Error("No access token in refresh response");
-  } catch (error) {
-    console.error("Internal refresh token failed:", error);
-    throw error;
-  }
-};
-
 const isTokenExpired = (token) => {
   if (!token) {
+    console.log("No token provided");
     return true;
   }
   try {
@@ -122,7 +106,12 @@ instance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+    console.log(`Response error for ${originalRequest.url}:`, {
+      status: error.response?.status,
+      data: error.response?.data,
+      retry: originalRequest._retry,
+    });
+
     if (
       (error.response?.status === 401 || error.response?.status === 403) &&
       !originalRequest._retry
@@ -132,7 +121,7 @@ instance.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const data = await refreshTokenInternal();
+          const data = await refreshToken();
           const newToken = data?.accessToken;
           if (!newToken) {
             throw new Error("No new access token received");
@@ -142,12 +131,13 @@ instance.interceptors.response.use(
           processQueue(null, newToken);
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
           return instance(originalRequest);
-        } catch (refreshError) {
-          console.error("Refresh token failed:", refreshError);
-          processQueue(refreshError, null);
+        } catch (e) {
+          console.error("Refresh token failed on retry:", e.message);
+          processQueue(e, null);
           localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          window.location.href = "/login";
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 100);
           return Promise.reject(error);
         } finally {
           isRefreshing = false;
