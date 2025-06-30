@@ -20,6 +20,29 @@ const StudentManagementPage = () => {
     return urlClassId ? Number(urlClassId) : null;
   });
   const [error, setError] = useState(null);
+  const [avatarErrors, setAvatarErrors] = useState({});
+
+  // Helper functions để validate avatar URL
+  const isValidAvatarUrl = (url) => {
+    if (!url) return false;
+    if (typeof url !== "string") return false;
+    if (url.trim() === "" || url === "null" || url === "undefined") return false;
+    if (url.startsWith("http") || url.startsWith("/")) return true;
+    return false;
+  };
+
+  // Lấy chữ cái đầu của tên người dùng cho avatar
+  const getInitial = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "S";
+  };
+
+  // Handle avatar error
+  const handleAvatarError = (studentId) => {
+    setAvatarErrors(prev => ({
+      ...prev,
+      [studentId]: true
+    }));
+  };
 
   // Helper functions để transform dữ liệu API
   const mapEnrollmentStatus = (apiStatus) => {
@@ -33,13 +56,13 @@ const StudentManagementPage = () => {
 
   const transformApiData = (apiData) => {
     return apiData.map(item => ({
-      id: item.studentId, // Dùng studentId làm unique key
-      studentId: item.studentCode, // STU002
-      name: item.studentName, // Phạm Thị Dung
+      id: item.studentId,
+      studentId: item.studentCode,
+      name: item.studentName,
       email: item.studentEmail,
-      status: mapEnrollmentStatus(item.enrollmentStatus), // ENROLLED -> enrolled
+      status: mapEnrollmentStatus(item.enrollmentStatus),
       registrationDate: item.enrolledAt,
-      avatar: item.avatarUrl || `https://ui-avatars.io/api/?name=${encodeURIComponent(item.studentName)}&background=0D8ABC&color=fff`,
+      avatarUrl: item.avatarUrl, // Store original avatar URL
       enrollmentId: item.enrollmentId
     }));
   };
@@ -68,6 +91,7 @@ const StudentManagementPage = () => {
       console.log('ClassId:', classId);
       setLoading(true);
       setError(null);
+      setAvatarErrors({}); // Reset avatar errors when reloading
       
       const response = await getClassStudents(classId);
       const transformedData = transformApiData(response.data || []);
@@ -612,11 +636,26 @@ const StudentManagementPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={student.avatar}
-                        alt={student.name}
-                      />
+                      <div className="h-10 w-10 rounded-full flex-shrink-0">
+                        {isValidAvatarUrl(student.avatarUrl) && !avatarErrors[student.id] ? (
+                          <img
+                            className="h-10 w-10 rounded-full object-cover"
+                            src={
+                              student.avatarUrl.startsWith("http")
+                                ? student.avatarUrl
+                                : `http://localhost:8080${student.avatarUrl}`
+                            }
+                            alt={student.name}
+                            onError={() => handleAvatarError(student.id)}
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
+                            <span className="text-white font-medium text-sm">
+                              {getInitial(student.name)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
                           {student.name}

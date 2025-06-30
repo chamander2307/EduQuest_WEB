@@ -30,7 +30,7 @@ const LoginPage = () => {
         return;
       }
       console.log("Đăng nhập thành công:", data);
-      const { accessToken, refreshToken, ...userInfo } = data;
+      const {  ...userInfo } = data;
       console.log("Đăng nhập thành công:", data);
 
       setUser(userInfo);
@@ -97,7 +97,7 @@ const LoginPage = () => {
 
     try {
       const data = await verifyRegisterOtp(username, otp);
-      const { accessToken, refreshToken, ...userInfo } = data;
+      const {  ...userInfo } = data;
 
       setUser(userInfo);
       setIsLogin(true);

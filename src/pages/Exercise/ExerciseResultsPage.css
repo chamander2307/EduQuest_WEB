@@ -416,3 +416,27 @@
     height: 1rem;
   }
 }
+.export-excel-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.export-excel-btn {
+  padding: 6px 18px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.08);
+}
+
+.export-excel-btn:hover {
+  background: #388e3c;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.15);
+}

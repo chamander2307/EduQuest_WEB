@@ -2,7 +2,8 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../contexts/InstructorContext";
-
+import DiscussionPage from "../pages/Discussion/DiscussionPage";
+import DiscussionCommentPage from "../pages/Discussion/DiscussionCommentPage";
 import LoginPage from "../pages/Auth/Login";
 import RegisterPage from "../pages/Auth/Register";
 import ClassManagementPage from "../pages/Classes/ClassManagementPage";
@@ -13,6 +14,8 @@ import HomePage from "../pages/HomePage/HomePage";
 import StudentManagementPage from "../pages/Students/StudentManagementPage";
 import ExerciseResultsPage from "../pages/Exercise/ExerciseResultsPage";
 import StudentExerciseDetailPage from "../pages/Exercise/StudentExerciseDetailPage";
+import ExercisePage from "../pages/Exercise/ExercisePage";
+import ExerciseDetailPage from "../pages/Exercise/ExerciseDetailPage";
 
 const ProtectedRoute = ({ element }) => {
   const { isLogin, loading } = useContext(UserContext);
@@ -25,10 +28,7 @@ const ProtectedRoute = ({ element }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public route */}
       <Route path="/" element={<HomePage />} />
-
-      {/* Protected routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
@@ -55,6 +55,22 @@ const AppRoutes = () => {
       <Route
         path="/exercise/student-detail/:participationId"
         element={<ProtectedRoute element={<StudentExerciseDetailPage />} />}
+      />
+      <Route
+        path="/exercises"
+        element={<ProtectedRoute element={<ExercisePage />} />}
+      />
+      <Route
+        path="/exercises/:id"
+        element={<ProtectedRoute element={<ExerciseDetailPage />} />}
+      />
+      <Route
+        path="/discussions/:exerciseId"
+        element={<ProtectedRoute element={<DiscussionPage />} />}
+      />
+      <Route
+        path="/discussions/:exerciseId/:discussionId"
+        element={<ProtectedRoute element={<DiscussionCommentPage />} />}
       />
     </Routes>
   );

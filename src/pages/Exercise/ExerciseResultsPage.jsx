@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import "./ExerciseResultsPage.css";
 import { getInstructorClasses } from "../../services/ClassServices";
+import { exportStudentScoresToExcel } from "../../services/ExportResult";
 import { getClassExercises, getExerciseResults } from "../../services/ExerciseServices";
 
 const ExerciseResultsPage = () => {
@@ -65,7 +66,18 @@ const ExerciseResultsPage = () => {
 
     loadClasses();
   }, [isLogin]);
-
+    const handleExportExcel = async () => {
+    if (!selectedClassId || !selectedExercise) {
+      toast.error("Vui lòng chọn lớp và bài tập!");
+      return;
+    }
+    try {
+      await exportStudentScoresToExcel(selectedClassId, selectedExercise.exerciseId);
+      toast.success("Xuất file Excel thành công!");
+    } catch (error) {
+      toast.error(error.message || "Xuất file Excel thất bại!");
+    }
+  };
   // Load exercises when class is selected
   useEffect(() => {
     const loadExercises = async () => {
@@ -369,6 +381,12 @@ const ExerciseResultsPage = () => {
                     <span>Đang làm bài: <strong>{exerciseResults.studentResults?.filter(r => r.status === 'IN_PROGRESS').length || 0}</strong></span>
                   </div>
                 )}
+              </div>
+              {/* 3. Nút xuất Excel */}
+              <div className="export-excel-wrapper">
+                <button className="export-excel-btn" onClick={handleExportExcel}>
+                  Xuất Excel
+                </button>
               </div>
             </div>
             

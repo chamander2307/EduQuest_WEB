@@ -134,11 +134,14 @@
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
 }
 
 .section-header {
   margin-bottom: 2rem;
   text-align: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f3f4f6;
 }
 
 .section-header h2 {
@@ -146,66 +149,82 @@
   font-weight: 700;
   color: #1f2937;
   margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .section-header p {
   color: #6b7280;
   font-size: 1rem;
   margin: 0;
+  font-weight: 500;
 }
 
 /* Questions Grid */
 .questions-grid {
   display: grid;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .question-card {
   border: 2px solid #e5e7eb;
   border-radius: 1rem;
   padding: 1.5rem;
-  background: #fafafa;
-  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .question-card:hover {
-  border-color: #d1d5db;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
 }
 
 .question-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .question-number {
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   border-radius: 2rem;
   font-size: 0.875rem;
   font-weight: 600;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .question-result {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   border-radius: 2rem;
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
 }
 
 .question-result.correct {
-  background: #dcfce7;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
   color: #166534;
+  border: 1px solid #16a34a;
 }
 
 .question-result.incorrect {
-  background: #fef2f2;
+  background: linear-gradient(135deg, #fef2f2, #fecaca);
   color: #dc2626;
+  border: 1px solid #dc2626;
 }
 
 .question-content h4 {
@@ -213,24 +232,41 @@
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 1.5rem 0;
-  line-height: 1.6;
+  line-height: 1.7;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  border-left: 4px solid #667eea;
 }
 
 /* Options List */
 .options-list {
   display: grid;
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .option-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: 1rem 1.25rem;
   border-radius: 0.75rem;
   border: 2px solid transparent;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.option-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  transition: all 0.3s ease;
 }
 
 .option-icon {
@@ -254,37 +290,40 @@
 
 /* Answer States */
 .answer-correct-selected {
-  background: #dcfce7;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
   border-color: #16a34a;
   color: #166534;
+  font-weight: 600;
 }
 
-.answer-correct-selected .answer-icon {
-  color: #16a34a;
+.answer-correct-selected::before {
+  background: #16a34a;
 }
 
 .answer-wrong-selected {
-  background: #fef2f2;
+  background: linear-gradient(135deg, #fef2f2, #fecaca);
   border-color: #dc2626;
   color: #dc2626;
+  font-weight: 600;
 }
 
-.answer-wrong-selected .answer-icon {
-  color: #dc2626;
+.answer-wrong-selected::before {
+  background: #dc2626;
 }
 
 .answer-correct-unselected {
-  background: #dcfce7;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
   border-color: #16a34a;
   color: #166534;
+  opacity: 0.8;
 }
 
-.answer-correct-unselected .answer-icon {
-  color: #16a34a;
+.answer-correct-unselected::before {
+  background: #16a34a;
 }
 
 .answer-default {
-  background: #f9fafb;
+  background: linear-gradient(135deg, #f9fafb, #f3f4f6);
   border-color: #e5e7eb;
   color: #6b7280;
 }
