@@ -1,7 +1,10 @@
 import React, { createContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { getInstructorProfile } from "../services/InstructorServices";
-import { logout as performLogout } from "../services/AuthServices";
+import {
+  logout as performLogout,
+  refreshToken,
+} from "../services/AuthServices";
 import { useNavigate } from "react-router-dom";
 
 export const UserContext = createContext();
@@ -12,43 +15,86 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Đưa init ra ngoài để dùng lại
   const init = async (withLoading = true) => {
     if (withLoading) setLoading(true);
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      if (withLoading) setLoading(false);
-      setUser(null);
-      setIsLogin(false);
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshTokenValue = localStorage.getItem("refreshToken");
+
+    // Nếu không có accessToken nhưng có refreshToken, thử làm mới
+    if (!accessToken && refreshTokenValue) {
+      try {
+        console.log("Thử làm mới token vì không có accessToken");
+        const tokenData = await refreshToken();
+        if (tokenData?.accessToken) {
+          localStorage.setItem("accessToken", tokenData.accessToken);
+          const decoded = jwtDecode(tokenData.accessToken);
+          const profile = await getInstructorProfile();
+          if (profile.role === "STUDENT") {
+            setTimeout(() => {
+              logout();
+            }, 2000);
+            return;
+          }
+          setUser({
+            ...profile,
+            id: decoded.sub,
+            fullName: profile.name,
+            avatarUrl:
+              profile.avatarUrl ||
+              `https://ui-avatars.com/api/?name=${profile.name}&background=random`,
+          });
+          setIsLogin(true);
+        } else {
+          throw new Error("Không nhận được accessToken mới");
+        }
+      } catch (err) {
+        console.error("Lỗi làm mới token:", err);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        setUser(null);
+        setIsLogin(false);
+        navigate("/login");
+      } finally {
+        if (withLoading) setLoading(false);
+      }
       return;
     }
 
-    try {
-      const decoded = jwtDecode(token);
-      const profile = await getInstructorProfile();
-      if (profile.role === "STUDENT") {
-        setTimeout(() => {
-          logout();
-        }, 2000);
-        return;
+    // Nếu có accessToken, tiếp tục như trước
+    if (accessToken) {
+      try {
+        const decoded = jwtDecode(accessToken);
+        const profile = await getInstructorProfile();
+        if (profile.role === "STUDENT") {
+          setTimeout(() => {
+            logout();
+          }, 2000);
+          return;
+        }
+        setUser({
+          ...profile,
+          id: decoded.sub,
+          fullName: profile.name,
+          avatarUrl:
+            profile.avatarUrl ||
+            `https://ui-avatars.com/api/?name=${profile.name}&background=random`,
+        });
+        setIsLogin(true);
+      } catch (err) {
+        console.error("Lỗi xác thực người dùng:", err);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        setUser(null);
+        setIsLogin(false);
+        navigate("/login");
+      } finally {
+        if (withLoading) setLoading(false);
       }
-      setUser({
-        ...profile,
-        id: decoded.sub,
-        fullName: profile.name,
-        avatarUrl:
-          profile.avatarUrl ||
-          `https://ui-avatars.com/api/?name=${profile.name}&background=random`,
-      });
-      setIsLogin(true);
-    } catch (err) {
-      console.error("Lỗi xác thực người dùng:", err);
-      localStorage.removeItem("accessToken");
+    } else {
+      // Nếu không có cả accessToken và refreshToken
+      if (withLoading) setLoading(false);
       setUser(null);
       setIsLogin(false);
-      navigate("/login");
-    } finally {
-      if (withLoading) setLoading(false);
     }
   };
 

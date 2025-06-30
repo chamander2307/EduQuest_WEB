@@ -39,7 +39,7 @@ const ClassManagementPage = () => {
           numberOfStudents: cls.numberOfStudents,
         }));
         setClasses(mappedClasses);
-        errorHandledRef.current = false; // Reset khi thành công
+        errorHandledRef.current = false;
       } catch (err) {
         if (!errorHandledRef.current) {
           console.log("Error handled in fetchClasses:", err.message);
