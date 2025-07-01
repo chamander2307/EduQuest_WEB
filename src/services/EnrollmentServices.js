@@ -45,3 +45,28 @@ export const updateEnrollmentStatus = async (enrollmentId, status) => {
     );
   }
 };
+
+export const removeEnrollment = async (enrollmentId) => {
+  try {
+    const response = await instance.delete(
+      `/enrollments/${enrollmentId}/remove`
+    );
+    const data = response.data;
+    if (data?.data === true) {
+      return (
+        getVietnameseMessage(data.code, "Xoá đăng ký") ||
+        "Xoá đăng ký thành công"
+      );
+    }
+    throw new Error(
+      getVietnameseMessage(data.code, "Xoá đăng ký") ||
+        "Xoá đăng ký không thành công"
+    );
+  } catch (error) {
+    const code = error.response?.data?.code;
+    throw new Error(
+      getVietnameseMessage(code, "Xoá đăng ký") ||
+        "Xoá đăng ký không thành công"
+    );
+  }
+};

@@ -7,7 +7,6 @@ import DiscussionCommentPage from "../pages/Discussion/DiscussionCommentPage";
 import LoginPage from "../pages/Auth/Login";
 import RegisterPage from "../pages/Auth/Register";
 import ClassManagementPage from "../pages/Classes/ClassManagementPage";
-import ClassDetailPage from "../pages/Classes/ClassDetailPage";
 import QuestionManagementPage from "../pages/Question/QuestionManagementPage";
 import ProfilePage from "../pages/Profile/ProfilePage";
 import HomePage from "../pages/HomePage/HomePage";
@@ -31,14 +30,13 @@ const AppRoutes = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
+      <Route
+        path="/profile"
+        element={<ProtectedRoute element={<ProfilePage />} />}
+      />
       <Route
         path="/classes"
         element={<ProtectedRoute element={<ClassManagementPage />} />}
-      />
-      <Route
-        path="/classes/:classId"
-        element={<ProtectedRoute element={<ClassDetailPage />} />}
       />
       <Route
         path="/questions"
